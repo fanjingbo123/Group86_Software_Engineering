@@ -1,3 +1,5 @@
+package GUI;
+
 public class User {
     private String user_name;
     private String password;
@@ -11,6 +13,8 @@ public class User {
     public User(String user_name, String password) {
         this.user_name = user_name;
         this.password = password;
+
+        //开始存
     }
 
     public String getUser_name() {
