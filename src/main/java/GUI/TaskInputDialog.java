@@ -117,19 +117,32 @@ public class TaskInputDialog extends JDialog {
         int year = (int) yearComboBox.getSelectedItem();
         int month = (int) monthComboBox.getSelectedItem();
         int day = (int) dayComboBox.getSelectedItem();
-        Date deadline = new GregorianCalendar(year, month - 1, day).getTime();
 
-        // Generate unique task ID
-        String taskId = UUID.randomUUID().toString();
+        // Create a Calendar object for the selected date
+        Calendar selectedDate = new GregorianCalendar(year, month - 1, day);
 
-        // Create Task object
-        Task newTask = new Task(taskId, taskContent, taskLevel, reward, deadline, false);
+        // Get the current date
+        Calendar currentDate = Calendar.getInstance();
 
-        // Add Task object to user's task list JSON file
-        saveTaskToFile(newTask);
+        // Check if the selected date is in the future
+        if (selectedDate.after(currentDate)) {
+            Date deadline = selectedDate.getTime();
 
-        dispose(); // Close the dialog
+            // Generate unique task ID
+            String taskId = UUID.randomUUID().toString();
+
+            // Create Task object
+            Task newTask = new Task(taskId, taskContent, taskLevel, reward, deadline, false);
+
+            // Add Task object to user's task list JSON file
+            saveTaskToFile(newTask);
+
+            dispose(); // Close the dialog
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a future date for the deadline.");
+        }
     }
+
 
     private void saveTaskToFile(Task newTask) {
         String username = currentUser.getUser_name();
