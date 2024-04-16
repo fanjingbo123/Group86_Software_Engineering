@@ -11,9 +11,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
-public class LoginGUI extends JFrame {
+public class MainBoard extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton signInButton;
@@ -21,7 +22,7 @@ public class LoginGUI extends JFrame {
 
     private User currentUser;
 
-    public LoginGUI() {
+    public MainBoard() {
         setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(300, 200);
@@ -105,12 +106,12 @@ public class LoginGUI extends JFrame {
                 // Check if the username already exists
                 File userDir = new File("src/main/java/UserData/" + username);
                 if (userDir.exists() && userDir.isDirectory()) {
-                    JOptionPane.showMessageDialog(LoginGUI.this, "Username already exists, please choose another one.");
+                    JOptionPane.showMessageDialog(MainBoard.this, "Username already exists, please choose another one.");
                     signUpUsernameField.setText(""); // Clear the username field
                     signUpPasswordField.setText(""); // Clear the password field
                     confirmPassField.setText(""); // Clear the confirm password field
                 } else if (!password.equals(confirmPass)) {
-                    JOptionPane.showMessageDialog(LoginGUI.this, "Passwords do not match, please try again.");
+                    JOptionPane.showMessageDialog(MainBoard.this, "Passwords do not match, please try again.");
                     signUpPasswordField.setText(""); // Clear the password field
                     confirmPassField.setText(""); // Clear the confirm password field
                 } else {
@@ -167,7 +168,7 @@ public class LoginGUI extends JFrame {
         setTitle("User Dashboard");
         getContentPane().removeAll();
         revalidate();
-        setSize(480, 500);
+        setSize(600, 500);
 
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -196,15 +197,40 @@ public class LoginGUI extends JFrame {
 
         Object[][] rowData = loadTasks();
 
-        Object[][] new_rowData = new Object[rowData.length][6];;
-
-        for(int i = 0 ; i < rowData.length; i++){
-            for(int j = 0; j < 6; j++){
-                new_rowData[i][j] = rowData[i][j];
+        ArrayList<Task> taskArrayList = new ArrayList<>();
+        for (Object[] rowDatum : rowData) {
+            if (!(boolean) rowDatum[7]) {
+                Task task = new Task(
+                        (String) rowDatum[6],
+                        (String) rowDatum[0],
+                        (int) rowDatum[1],
+                        (double) rowDatum[2],
+                        (Date) rowDatum[3],
+                        (boolean) rowDatum[7]
+                );
+                taskArrayList.add(task);
             }
         }
 
-        JTable taskTable = new JTable(new_rowData, columnNames);
+        Object[][] filteredData = new Object[taskArrayList.size()][8];
+        for (int i = 0; i < taskArrayList.size(); i++){
+            filteredData[i][0] = taskArrayList.get(i).getTask_content();
+            filteredData[i][1] = taskArrayList.get(i).getCredit_level();
+            filteredData[i][2] = taskArrayList.get(i).getReward();
+            filteredData[i][3] = taskArrayList.get(i).getDDL();
+            filteredData[i][4] = taskArrayList.get(i).getTask_id();
+            filteredData[i][5] = taskArrayList.get(i).isFlag();
+        }
+
+        for(int i = 0 ; i < filteredData.length; i++){
+            for (int j = 0; j < 6; j++) {
+                System.out.print(filteredData[i][j]+" ");
+            }
+            System.out.println();
+        }
+
+
+        JTable taskTable = new JTable(filteredData, columnNames);
         taskTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         taskTable.getColumn("Finish").setCellRenderer(new ButtonRenderer("Finish"));
@@ -219,8 +245,13 @@ public class LoginGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int row = taskTable.getSelectedRow();
-                String task_id = (String) rowData[row][6];
-                System.out.println(task_id);
+                String task_id = (String) filteredData[row][4];
+
+                double reward = updateTask(task_id);
+                updateUserFile();
+
+                //刷新界面
+                homepage();
             }
         });
 
@@ -228,7 +259,7 @@ public class LoginGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int row = taskTable.getSelectedRow();
-                String task_id = (String) rowData[row][6];
+                String task_id = (String) filteredData[row][4];
 
                 updateTask(task_id);
                 homepage();
@@ -265,7 +296,7 @@ public class LoginGUI extends JFrame {
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                EditPasswordDialog editPasswordDialog = new EditPasswordDialog(LoginGUI.this, currentUser);
+                EditPasswordDialog editPasswordDialog = new EditPasswordDialog(MainBoard.this, currentUser);
                 editPasswordDialog.setVisible(true);
             }
         });
@@ -273,7 +304,7 @@ public class LoginGUI extends JFrame {
         setTaskButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TaskInputDialog taskDialog = new TaskInputDialog(LoginGUI.this, currentUser);
+                TaskInputDialog taskDialog = new TaskInputDialog(MainBoard.this, currentUser);
                 taskDialog.setVisible(true);
             }
         });
@@ -286,6 +317,29 @@ public class LoginGUI extends JFrame {
         });
         add(panel);
         setVisible(true);
+    }
+
+    private void updateUserFile() {
+        String username = currentUser.getUser_name();
+        String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
+
+        // 创建以 username 命名的包目录
+        String packagePath = "src/main/java/UserData/" + username;
+        File packageDirectory = new File(packagePath);
+        if (!packageDirectory.exists()) {
+            packageDirectory.mkdirs(); // 创建目录及其父目录
+        }
+
+        // 创建以 username 命名的 JSON 文件
+        String jsonFilePath = packagePath + "/" + username + ".json";
+        File jsonFile = new File(jsonFilePath);
+        try (FileWriter file = new FileWriter(jsonFile)) {
+            file.write(jsonString);
+            JOptionPane.showMessageDialog(this, "Update Successful");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error while updating user data");
+            e.printStackTrace();
+        }
     }
 
     public double updateTask(String taskId) {
@@ -335,10 +389,12 @@ public class LoginGUI extends JFrame {
         String taskFilePath = "src/main/java/UserData/" + username + "/" + username + "_task.json";
 
         try {
+            //判断有没有json 文件
             File taskFile = new File(taskFilePath);
             if (!taskFile.exists()) {
                 return new Object[0][0];
             }
+
 
             StringBuilder taskJsonString = new StringBuilder();
             try (FileReader fileReader = new FileReader(taskFile)) {
@@ -347,7 +403,7 @@ public class LoginGUI extends JFrame {
                     taskJsonString.append((char) character);
                 }
             }
-
+            //如果 json 是空的
             com.alibaba.fastjson2.JSONArray taskArray;
             if (taskJsonString.length() == 0) {
                 return new Object[0][0];
@@ -359,14 +415,12 @@ public class LoginGUI extends JFrame {
 
             Object[][] rowData = new Object[tasks.length][8];
             for (int i = 0; i < tasks.length; i++) {
-                if (!tasks[i].isFlag()) {
-                    rowData[i][0] = tasks[i].getTask_content();
-                    rowData[i][1] = tasks[i].getCredit_level();
-                    rowData[i][2] = tasks[i].getReward();
-                    rowData[i][3] = tasks[i].getDDL();
-                    rowData[i][6] = tasks[i].getTask_id();
-                    rowData[i][7] = tasks[i].isFlag();
-                }
+                rowData[i][0] = tasks[i].getTask_content();
+                rowData[i][1] = tasks[i].getCredit_level();
+                rowData[i][2] = tasks[i].getReward();
+                rowData[i][3] = tasks[i].getDDL();
+                rowData[i][6] = tasks[i].getTask_id();
+                rowData[i][7] = tasks[i].isFlag();
             }
 
             return rowData;
@@ -445,7 +499,7 @@ public class LoginGUI extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new LoginGUI();
+                new MainBoard();
             }
         });
     }

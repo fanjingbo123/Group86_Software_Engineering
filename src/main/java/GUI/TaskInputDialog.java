@@ -18,7 +18,7 @@ public class TaskInputDialog extends JDialog {
 
     private JTextField taskContentField;
     private JComboBox<String> taskLevelComboBox;
-    private JTextField rewardField;
+    private JComboBox<Double> rewardField;
     private JComboBox<Integer> yearComboBox;
     private JComboBox<Integer> monthComboBox;
     private JComboBox<Integer> dayComboBox;
@@ -38,7 +38,11 @@ public class TaskInputDialog extends JDialog {
         String[] levels = {"1", "2", "3", "4", "5"};
         taskLevelComboBox = new JComboBox<>(levels);
         JLabel rewardLabel = new JLabel("Reward:");
-        rewardField = new JTextField();
+        rewardField = new JComboBox<>();
+        for (int i = 1; i <= 100; i++) {
+            rewardField.addItem((double)i);
+        }
+
         JLabel deadlineLabel = new JLabel("Deadline:");
 
         JPanel deadlinePanel = new JPanel(new GridLayout(1, 3));
@@ -113,7 +117,7 @@ public class TaskInputDialog extends JDialog {
     private void addTaskToList() {
         String taskContent = taskContentField.getText();
         int taskLevel = Integer.parseInt((String) taskLevelComboBox.getSelectedItem());
-        double reward = Double.parseDouble(rewardField.getText());
+        double reward = (double) rewardField.getSelectedItem();
         int year = (int) yearComboBox.getSelectedItem();
         int month = (int) monthComboBox.getSelectedItem();
         int day = (int) dayComboBox.getSelectedItem();
