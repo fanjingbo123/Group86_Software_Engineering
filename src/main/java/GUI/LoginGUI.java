@@ -193,15 +193,47 @@ public class LoginGUI extends JFrame {
 
         // Middle Panel
         String[] columnNames = {"Task Content", "Credit Level", "Rewards", "DDL", "Finish", "Delete"};
+
         Object[][] rowData = loadTasks();
-        JTable taskTable = new JTable(rowData, columnNames);
+
+        Object[][] new_rowData = new Object[rowData.length][6];;
+
+        for(int i = 0 ; i < rowData.length; i++){
+            for(int j = 0; j < 6; j++){
+                new_rowData[i][j] = rowData[i][j];
+            }
+        }
+
+        JTable taskTable = new JTable(new_rowData, columnNames);
         taskTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         taskTable.getColumn("Finish").setCellRenderer(new ButtonRenderer("Finish"));
         taskTable.getColumn("Delete").setCellRenderer(new ButtonRenderer("Delete"));
 
+        // 为"Finish"列设置ButtonEditor
+        // 为"Finish"列设置ButtonEditor
         taskTable.getColumn("Finish").setCellEditor(new ButtonEditor("Finish"));
         taskTable.getColumn("Delete").setCellEditor(new ButtonEditor("Delete"));
+
+        ((ButtonEditor) taskTable.getColumn("Finish").getCellEditor()).setActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int row = taskTable.getSelectedRow();
+                String task_id = (String) rowData[row][6];
+                System.out.println(task_id);
+            }
+        });
+
+        ((ButtonEditor) taskTable.getColumn("Delete").getCellEditor()).setActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int row = taskTable.getSelectedRow();
+                String task_id = (String) rowData[row][6];
+
+                updateTask(task_id);
+                homepage();
+            }
+        });
 
         for (String column: columnNames){
             taskTable.getColumn(column).setMinWidth(90);
@@ -256,6 +288,48 @@ public class LoginGUI extends JFrame {
         setVisible(true);
     }
 
+    public double updateTask(String taskId) {
+
+        String username = currentUser.getUser_name();
+        String taskFileName = "src/main/java/UserData/" + username + "/" + username + "_task.json";
+
+        Object[][] taskData = loadTasks();
+
+        // 遍历任务数组，查找对应的任务对象
+        for (int i = 0; i < taskData.length; i += 1) {
+            String id = (String) taskData[i][6];
+            if (taskId.equals(id)) {
+                taskData[i][7] = true;
+
+                JSONArray taskArray = new JSONArray();
+                for (Object[] taskDatum : taskData) {
+                    // 创建新任务的 JSON 对象
+                    com.alibaba.fastjson.JSONObject newTaskJson = new com.alibaba.fastjson.JSONObject();
+                    newTaskJson.put("task_id", taskDatum[6]);
+                    newTaskJson.put("task_content", taskDatum[0]);
+                    newTaskJson.put("credit_level", taskDatum[1]);
+                    newTaskJson.put("reward", taskDatum[2]);
+                    newTaskJson.put("DDL", taskDatum[3]);
+                    newTaskJson.put("flag", taskDatum[7]);
+
+                    // 将新任务添加到 JSON 数组
+                    taskArray.add(newTaskJson);
+                }
+                // 将更新后的 JSON 数组写回任务文件
+                try (FileWriter fileWriter = new FileWriter(taskFileName)) {
+                    fileWriter.write(taskArray.toJSONString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return (double)taskData[i][2];
+            }
+        }
+
+        // 如果未找到对应的任务，则返回 null
+        return 0;
+    }
+
     private Object[][] loadTasks() {
         String username = currentUser.getUser_name();
         String taskFilePath = "src/main/java/UserData/" + username + "/" + username + "_task.json";
@@ -283,28 +357,15 @@ public class LoginGUI extends JFrame {
 
             Task[] tasks = taskArray.toJavaObject(Task[].class);
 
-            Object[][] rowData = new Object[tasks.length][6];
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Object[][] rowData = new Object[tasks.length][8];
             for (int i = 0; i < tasks.length; i++) {
                 if (!tasks[i].isFlag()) {
                     rowData[i][0] = tasks[i].getTask_content();
                     rowData[i][1] = tasks[i].getCredit_level();
                     rowData[i][2] = tasks[i].getReward();
-                    rowData[i][3] = dateFormat.format(tasks[i].getDDL());
-                    String taskId = tasks[i].getTask_id();
-
-                    TaskButton finish = new TaskButton("Finish", taskId);
-                    finish.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            // 获取任务的 ID
-                            String MyId = finish.task_id;
-                            System.out.println(MyId);
-                        }
-                    });
-
-                    rowData[i][4] = finish;
-                    rowData[i][5] = new JButton("Delete");
+                    rowData[i][3] = tasks[i].getDDL();
+                    rowData[i][6] = tasks[i].getTask_id();
+                    rowData[i][7] = tasks[i].isFlag();
                 }
             }
 
