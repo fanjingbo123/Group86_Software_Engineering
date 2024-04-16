@@ -13,19 +13,9 @@ public class ButtonEditor extends DefaultCellEditor {
         this.setClickCountToStart(1);
         this.buttonText = buttonText;
         btn = new JButton(this.buttonText);
-        btn.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("按钮事件触发----");
-
-            }
-        });
-
     }
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-
         return btn;
     }
 }

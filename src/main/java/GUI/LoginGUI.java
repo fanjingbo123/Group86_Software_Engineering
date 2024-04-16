@@ -2,16 +2,16 @@ package GUI;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import utils.*;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.text.SimpleDateFormat;
 
 public class LoginGUI extends JFrame {
     private JTextField usernameField;
@@ -127,8 +127,6 @@ public class LoginGUI extends JFrame {
         setVisible(true);
     }
 
-
-
     private void backToLogin() {
         setTitle("Login");
         getContentPane().removeAll();
@@ -169,7 +167,7 @@ public class LoginGUI extends JFrame {
         setTitle("User Dashboard");
         getContentPane().removeAll();
         revalidate();
-        setSize(800, 500);
+        setSize(480, 500);
 
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -204,6 +202,10 @@ public class LoginGUI extends JFrame {
 
         taskTable.getColumn("Finish").setCellEditor(new ButtonEditor("Finish"));
         taskTable.getColumn("Delete").setCellEditor(new ButtonEditor("Delete"));
+
+        for (String column: columnNames){
+            taskTable.getColumn(column).setMinWidth(90);
+        }
 
 
         JScrollPane scrollPane = new JScrollPane(taskTable);
@@ -247,35 +249,9 @@ public class LoginGUI extends JFrame {
         refreshTaskListButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Remove the existing task table and scroll pane
-                panel.remove(scrollPane);
-                revalidate();
-
-                // Load new task data
-                Object[][] rowData = loadTasks();
-                DefaultTableModel model = new DefaultTableModel(rowData, columnNames);
-
-                JTable newTaskTable = new JTable(model);
-                newTaskTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-                // Set renderers and editors for finish and delete columns
-                newTaskTable.getColumn("Finish").setCellRenderer(new ButtonRenderer("Finish"));
-                newTaskTable.getColumn("Delete").setCellRenderer(new ButtonRenderer("Delete"));
-                newTaskTable.getColumn("Finish").setCellEditor(new ButtonEditor("Finish"));
-                newTaskTable.getColumn("Delete").setCellEditor(new ButtonEditor("Delete"));
-
-                JScrollPane newScrollPane = new JScrollPane(newTaskTable);
-                panel.add(newScrollPane, BorderLayout.CENTER);
-
-                // Update the panel
-                panel.updateUI();
+                homepage();
             }
         });
-
-
-
-
-
         add(panel);
         setVisible(true);
     }
@@ -300,7 +276,7 @@ public class LoginGUI extends JFrame {
 
             com.alibaba.fastjson2.JSONArray taskArray;
             if (taskJsonString.length() == 0) {
-                taskArray = com.alibaba.fastjson2.JSONArray.of(new JSONArray());
+                return new Object[0][0];
             } else {
                 taskArray = JSON.parseArray(taskJsonString.toString());
             }
@@ -308,13 +284,26 @@ public class LoginGUI extends JFrame {
             Task[] tasks = taskArray.toJavaObject(Task[].class);
 
             Object[][] rowData = new Object[tasks.length][6];
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             for (int i = 0; i < tasks.length; i++) {
                 if (!tasks[i].isFlag()) {
                     rowData[i][0] = tasks[i].getTask_content();
                     rowData[i][1] = tasks[i].getCredit_level();
                     rowData[i][2] = tasks[i].getReward();
-                    rowData[i][3] = tasks[i].getDDL();
-                    rowData[i][4] = new JButton("Finish");
+                    rowData[i][3] = dateFormat.format(tasks[i].getDDL());
+                    String taskId = tasks[i].getTask_id();
+
+                    TaskButton finish = new TaskButton("Finish", taskId);
+                    finish.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // 获取任务的 ID
+                            String MyId = finish.task_id;
+                            System.out.println(MyId);
+                        }
+                    });
+
+                    rowData[i][4] = finish;
                     rowData[i][5] = new JButton("Delete");
                 }
             }
@@ -326,9 +315,6 @@ public class LoginGUI extends JFrame {
 
         return new Object[0][0];
     }
-
-
-
 
     private void signIn() {
         // Implement sign in logic here
@@ -361,6 +347,7 @@ public class LoginGUI extends JFrame {
 
     private void addComponentsToLoginPanel() {
         JPanel panel = new JPanel(new GridLayout(3, 2));
+        setSize(300, 200);
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameField = new JTextField();
