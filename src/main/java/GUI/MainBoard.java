@@ -6,6 +6,12 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import utils.*;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -141,7 +147,7 @@ public class MainBoard extends JFrame {
         String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
 
         // 创建以 username 命名的包目录
-        String packagePath = "/Users/williamma/IdeaProjects/jsp/Group86_Software_Engineering/src/main/java/UserData/" + username;
+        String packagePath = "src/main/java/UserData/" + username;
         File packageDirectory = new File(packagePath);
         if (!packageDirectory.exists()) {
             packageDirectory.mkdirs(); // 创建目录及其父目录
@@ -164,7 +170,7 @@ public class MainBoard extends JFrame {
     }
 
 
-    private void homepage() {
+    public void homepage() {
         setTitle("User Dashboard");
         getContentPane().removeAll();
         revalidate();
@@ -222,14 +228,6 @@ public class MainBoard extends JFrame {
             filteredData[i][5] = taskArrayList.get(i).isFlag();
         }
 
-        for(int i = 0 ; i < filteredData.length; i++){
-            for (int j = 0; j < 6; j++) {
-                System.out.print(filteredData[i][j]+" ");
-            }
-            System.out.println();
-        }
-
-
         JTable taskTable = new JTable(filteredData, columnNames);
         taskTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -247,11 +245,31 @@ public class MainBoard extends JFrame {
                 int row = taskTable.getSelectedRow();
                 String task_id = (String) filteredData[row][4];
 
-                double reward = updateTask(task_id);
-                updateUserFile();
+                if(currentUser.getCredit_level() >= (int)filteredData[row][1]){
+                    double reward = updateTask(task_id);  // 假设 updateTask 标记任务完成并返回奖励
 
-                //刷新界面
-                homepage();
+                    // 更新用户的总奖励和当前余额
+                    currentUser.setTotal_reward(currentUser.getTotal_reward() + reward);
+                    currentUser.setCurrent(currentUser.getCurrent() + reward);
+
+                    int newCreditLevel = currentUser.getCredit_level() + (int)(currentUser.getTotal_reward() / 50) - (int)((currentUser.getTotal_reward() - reward) / 50);
+                    if (newCreditLevel != currentUser.getCredit_level()) {
+                        currentUser.setCredit_level(newCreditLevel);  // 更新 credit_level
+                        JOptionPane.showMessageDialog(null, "Congratulations! Your credit level has been increased to " + newCreditLevel);
+                    }
+                    try {
+                        logTransaction((double)filteredData[row][2], false, "current", null);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                    // 更新用户数据文件或数据库条目
+                    updateUserFile();
+                    // 刷新主界面以显示更新的数据
+                    homepage();
+                }else {
+                    JOptionPane.showMessageDialog(null, "Your credit level is not high enough to complete this task.", "Task Completion Denied", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -317,9 +335,176 @@ public class MainBoard extends JFrame {
         });
         add(panel);
         setVisible(true);
+
+        setGoalsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SetGoalDialog goalDialog = new SetGoalDialog(MainBoard.this, currentUser);
+                goalDialog.setVisible(true);
+            }
+        });
+
+        transactionButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                transactionRecordPage();
+            }
+        });
     }
 
-    private void updateUserFile() {
+    public void transactionRecordPage() {
+        setTitle("Transaction Record");
+        getContentPane().removeAll();
+        revalidate();
+        setSize(600, 400); // 设置页面大小
+
+        // 总体布局面板
+        JPanel panel = new JPanel(new BorderLayout());
+
+        // 顶部面板，用于显示标题和账户信息
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+
+        // 标题标签
+        JLabel titleLabel = new JLabel("Transaction Record", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        topPanel.add(titleLabel);
+
+        // 账户信息标签
+        JLabel current = new JLabel("Current: " + currentUser.getCurrent(), SwingConstants.CENTER);
+        JLabel saving = new JLabel("Saving: " + currentUser.getSaving(), SwingConstants.CENTER);
+        topPanel.add(current);
+        topPanel.add(saving);
+
+        // 将顶部面板添加到主面板的北部
+        panel.add(topPanel, BorderLayout.NORTH);
+
+        // 创建表格的列名
+        String[] columnNames = {"Time", "Expense/Income", "Account Type"};
+
+        // 读取交易数据
+        Object[][] data = loadTransactionData();
+
+        // 创建表格
+        JTable table = new JTable(data, columnNames);
+        JScrollPane scrollPane = new JScrollPane(table); // 让表格可滚动
+        panel.add(scrollPane, BorderLayout.CENTER); // 添加到中间
+
+        // 底部的按钮
+        JPanel bottomPanel = new JPanel();
+        JButton backButton = new JButton("Back");
+        JButton withDrawButton = new JButton("Withdraw");
+        JButton depositButton = new JButton("Deposit");
+
+        bottomPanel.add(withDrawButton);
+        bottomPanel.add(depositButton);
+        bottomPanel.add(backButton);
+
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                homepage(); // 返回主页面
+            }
+        });
+        withDrawButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                WithdrawDialog withdrawDialog = new WithdrawDialog(MainBoard.this, currentUser);
+                withdrawDialog.setVisible(true);
+            }
+        });
+        depositButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DepositDialog depositDialog = new DepositDialog(MainBoard.this, currentUser);
+                depositDialog.setVisible(true);
+            }
+        });
+
+        // 把底部面板添加到主面板的南部
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+
+        // 把主面板添加到frame
+        add(panel);
+        setVisible(true); // 显示页面
+    }
+    public void refreshTransactionRecordPage() {
+        transactionRecordPage();  // 假设这是重载交易记录的现有方法
+    }
+
+    public void logTransaction(double amount, boolean isExpense, String accountType, String time) throws IOException {
+        if (time == null || time.isEmpty()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            time = sdf.format(new Date());
+        }
+
+        JSONObject transactionDetails = new JSONObject();
+        transactionDetails.put("time", time);
+        transactionDetails.put("amount", amount);
+        transactionDetails.put("isExpense", isExpense);
+        transactionDetails.put("accountType", accountType);
+
+        updateTransaction(transactionDetails);
+    }
+
+    private void updateTransaction(JSONObject transactionDetails) throws IOException {
+        String username = currentUser.getUser_name();
+        String transactionFilePath = "src/main/java/UserData/" + username + "/" + username + "_transaction.json";
+        JSONArray transactions = null;
+
+        File transactionFile = new File(transactionFilePath);
+        if (transactionFile.exists() && transactionFile.length() != 0) {
+            String jsonText = new String(Files.readAllBytes(Paths.get(transactionFilePath)), StandardCharsets.UTF_8);
+            transactions = JSON.parseArray(jsonText);
+        }
+
+        if (transactions == null) {
+            transactions = new JSONArray(); // 确保transactions不为null
+        }
+
+        transactions.add(transactionDetails);
+
+        try (FileWriter fileWriter = new FileWriter(transactionFile)) {
+            fileWriter.write(transactions.toJSONString());
+        }
+    }
+
+
+    private Object[][] loadTransactionData() {
+        String username = currentUser.getUser_name();
+        String transactionFileName = "src/main/java/UserData/" + username + "/" + username + "_transaction.json";
+        File transactionFile = new File(transactionFileName);
+
+        if (!transactionFile.exists()) {
+            return new Object[0][0]; // 没有交易记录，返回空数组
+        }
+
+        try {
+            // 读取文件内容
+            String jsonText = new String(Files.readAllBytes(transactionFile.toPath()), StandardCharsets.UTF_8);
+            JSONArray transactions = JSON.parseArray(jsonText);
+
+            if (transactions == null) {
+                transactions = new JSONArray(); // 确保transactions不为null
+            }
+
+            Object[][] data = new Object[transactions.size()][3];
+            for (int i = 0; i < transactions.size(); i++) {
+                JSONObject transaction = transactions.getJSONObject(i);
+                data[i][0] = transaction.getString("time");
+                data[i][1] = transaction.getBoolean("isExpense") ? "-" + transaction.getDouble("amount") : "+" + transaction.getDouble("amount");
+                data[i][2] = transaction.getString("accountType");
+            }
+            return data;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new Object[0][0];
+        }
+    }
+
+
+
+    public void updateUserFile() {
         String username = currentUser.getUser_name();
         String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
 
@@ -327,7 +512,7 @@ public class MainBoard extends JFrame {
         String packagePath = "src/main/java/UserData/" + username;
         File packageDirectory = new File(packagePath);
         if (!packageDirectory.exists()) {
-            packageDirectory.mkdirs(); // 创建目录及其父目录
+            packageDirectory.mkdirs();
         }
 
         // 创建以 username 命名的 JSON 文件
@@ -432,7 +617,6 @@ public class MainBoard extends JFrame {
     }
 
     private void signIn() {
-        // Implement sign in logic here
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
 
@@ -445,6 +629,12 @@ public class MainBoard extends JFrame {
                     String storedPassword = userData.getString("password");
                     if (password.equals(storedPassword)) {
                         currentUser = new User(userData.getString("user_name"), storedPassword);
+                        currentUser.setCurrent(userData.getDoubleValue("current"));
+                        currentUser.setSaving(userData.getDoubleValue("saving"));
+                        currentUser.setTotal_reward(userData.getDoubleValue("total_reward"));
+                        currentUser.setGoal_content(userData.getString("goal_content"));
+                        currentUser.setGoal_value(userData.getDoubleValue("goal_value"));
+                        currentUser.setCredit_level(userData.getIntValue("credit_level"));
                         homepage();
                     } else {
                         JOptionPane.showMessageDialog(this, "Invalid Password");
