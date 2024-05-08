@@ -27,6 +27,7 @@ public class MainBoard extends JFrame {
     private JButton signUpButton;
 
     private User currentUser;
+    private boolean isParent = false;
 
     public MainBoard() {
         setTitle("Login");
@@ -73,25 +74,36 @@ public class MainBoard extends JFrame {
         setTitle("Sign Up");
         getContentPane().removeAll();
         revalidate();
+        setSize(330, 250);
 
-        JPanel panel = new JPanel(new GridLayout(5, 2));
+        JPanel panel = new JPanel(new GridLayout(6, 2));
 
         JLabel usernameLabel = new JLabel("Username:");
         JTextField signUpUsernameField = new JTextField();
-        JLabel passwordLabel = new JLabel("Password:");
-        JPasswordField signUpPasswordField = new JPasswordField();
-        JLabel confirmPassLabel = new JLabel("Confirm Password:");
-        JPasswordField confirmPassField = new JPasswordField();
+        JLabel parentPasswordLabel = new JLabel("Parent Password:");
+        JPasswordField parentSignUpPasswordField = new JPasswordField();
+        JLabel confirmParentPassLabel = new JLabel("Confirm Parent Password:");
+        JPasswordField confirmParentPassField = new JPasswordField();
+        JLabel childPasswordLabel = new JLabel("Child Password:");
+        JPasswordField childSignUpPasswordField = new JPasswordField();
+        JLabel confirmChildPassLabel = new JLabel("Confirm Child Password:");
+        JPasswordField confirmChildPassField = new JPasswordField();
 
         JButton confirmSignUpButton = new JButton("Sign Up");
         JButton cancelSignUpButton = new JButton("Cancel");
 
         panel.add(usernameLabel);
         panel.add(signUpUsernameField);
-        panel.add(passwordLabel);
-        panel.add(signUpPasswordField);
-        panel.add(confirmPassLabel);
-        panel.add(confirmPassField);
+        panel.add(parentPasswordLabel);
+        panel.add(parentSignUpPasswordField);
+        panel.add(confirmParentPassLabel);
+        panel.add(confirmParentPassField);
+
+        panel.add(childPasswordLabel);
+        panel.add(childSignUpPasswordField);
+        panel.add(confirmChildPassLabel);
+        panel.add(confirmChildPassField);
+
         panel.add(confirmSignUpButton);
         panel.add(cancelSignUpButton);
 
@@ -106,27 +118,43 @@ public class MainBoard extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username = signUpUsernameField.getText();
-                String password = new String(signUpPasswordField.getPassword());
-                String confirmPass = new String(confirmPassField.getPassword());
+                String parent_password = new String(parentSignUpPasswordField.getPassword());
+                String confirmParentPass = new String(confirmParentPassField.getPassword());
+                String child_password = new String(childSignUpPasswordField.getPassword());
+                String confirmChildPass = new String(confirmChildPassField.getPassword());
 
                 // Check if the username already exists
                 File userDir = new File("src/main/java/UserData/" + username);
                 if (userDir.exists() && userDir.isDirectory()) {
                     JOptionPane.showMessageDialog(MainBoard.this, "Username already exists, please choose another one.");
-                    signUpUsernameField.setText(""); // Clear the username field
-                    signUpPasswordField.setText(""); // Clear the password field
-                    confirmPassField.setText(""); // Clear the confirm password field
-                } else if (!password.equals(confirmPass)) {
-                    JOptionPane.showMessageDialog(MainBoard.this, "Passwords do not match, please try again.");
-                    signUpPasswordField.setText(""); // Clear the password field
-                    confirmPassField.setText(""); // Clear the confirm password field
-                } else {
-                    // Proceed with sign up logic
-                    // Sample logic, you should implement your own user creation logic
-                    currentUser = new User(username, password);
+                    refresh();
+                } else if (parent_password.isEmpty() || confirmParentPass.isEmpty() || child_password.isEmpty() || confirmChildPass.isEmpty()) {
+                    JOptionPane.showMessageDialog(MainBoard.this, "Passwords can't be null or empty.");
+                    refresh();
+                } else if (parent_password.equals(child_password)) {
+                    JOptionPane.showMessageDialog(MainBoard.this, "Passwords can't be the same.");
+                    refresh();
+                } else if (!parent_password.equals(confirmParentPass)) {
+                    JOptionPane.showMessageDialog(MainBoard.this, "Parent Passwords do not match, please try again.");
+                    refresh();
+                }
+                else if (!child_password.equals(confirmChildPass)) {
+                    JOptionPane.showMessageDialog(MainBoard.this, "Child Passwords do not match, please try again.");
+                    refresh();
+                }
+                else {
+                    currentUser = new User(username, HashGenerator.generateSHA256(parent_password), HashGenerator.generateSHA256(child_password));
                     saveUserToFile();
                     homepage();
                 }
+            }
+
+            public void refresh(){
+                signUpUsernameField.setText("");
+                parentSignUpPasswordField.setText("");
+                confirmParentPassField.setText("");
+                childSignUpPasswordField.setText("");
+                confirmChildPassField.setText("");
             }
         });
 
@@ -169,7 +197,6 @@ public class MainBoard extends JFrame {
         }
     }
 
-
     public void homepage() {
         setTitle("User Dashboard");
         getContentPane().removeAll();
@@ -195,7 +222,9 @@ public class MainBoard extends JFrame {
         topPanel.add(totalRewards);
         topPanel.add(goals);
         topPanel.add(logoutButton);
-        topPanel.add(editButton);
+        if(isParent){
+            topPanel.add(editButton);
+        }
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Middle Panel
@@ -203,20 +232,7 @@ public class MainBoard extends JFrame {
 
         Object[][] rowData = loadTasks();
 
-        ArrayList<Task> taskArrayList = new ArrayList<>();
-        for (Object[] rowDatum : rowData) {
-            if (!(boolean) rowDatum[7]) {
-                Task task = new Task(
-                        (String) rowDatum[6],
-                        (String) rowDatum[0],
-                        (int) rowDatum[1],
-                        (double) rowDatum[2],
-                        (Date) rowDatum[3],
-                        (boolean) rowDatum[7]
-                );
-                taskArrayList.add(task);
-            }
-        }
+        ArrayList<Task> taskArrayList = getTasks(rowData);
 
         Object[][] filteredData = new Object[taskArrayList.size()][8];
         for (int i = 0; i < taskArrayList.size(); i++){
@@ -298,7 +314,9 @@ public class MainBoard extends JFrame {
         JButton refreshTaskListButton = new JButton("Refresh Task List");
         JButton setGoalsButton = new JButton("Set Goals");
         JButton transactionButton = new JButton("Transaction");
-        bottomPanel.add(setTaskButton);
+        if (isParent) {
+            bottomPanel.add(setTaskButton);
+        }
         bottomPanel.add(refreshTaskListButton);
         bottomPanel.add(setGoalsButton);
         bottomPanel.add(transactionButton);
@@ -352,6 +370,24 @@ public class MainBoard extends JFrame {
         });
     }
 
+    private static ArrayList<Task> getTasks(Object[][] rowData) {
+        ArrayList<Task> taskArrayList = new ArrayList<>();
+        for (Object[] rowDatum : rowData) {
+            if (!(boolean) rowDatum[7]) {
+                Task task = new Task(
+                        (String) rowDatum[6],
+                        (String) rowDatum[0],
+                        (int) rowDatum[1],
+                        (double) rowDatum[2],
+                        (Date) rowDatum[3],
+                        (boolean) rowDatum[7]
+                );
+                taskArrayList.add(task);
+            }
+        }
+        return taskArrayList;
+    }
+
     public void transactionRecordPage() {
         setTitle("Transaction Record");
         getContentPane().removeAll();
@@ -396,8 +432,10 @@ public class MainBoard extends JFrame {
         JButton withDrawButton = new JButton("Withdraw");
         JButton depositButton = new JButton("Deposit");
 
-        bottomPanel.add(withDrawButton);
-        bottomPanel.add(depositButton);
+        if (isParent) {
+            bottomPanel.add(withDrawButton);
+            bottomPanel.add(depositButton);
+        }
         bottomPanel.add(backButton);
 
         backButton.addActionListener(new ActionListener() {
@@ -428,6 +466,7 @@ public class MainBoard extends JFrame {
         add(panel);
         setVisible(true); // 显示页面
     }
+
     public void refreshTransactionRecordPage() {
         transactionRecordPage();  // 假设这是重载交易记录的现有方法
     }
@@ -469,7 +508,6 @@ public class MainBoard extends JFrame {
         }
     }
 
-
     private Object[][] loadTransactionData() {
         String username = currentUser.getUser_name();
         String transactionFileName = "src/main/java/UserData/" + username + "/" + username + "_transaction.json";
@@ -501,8 +539,6 @@ public class MainBoard extends JFrame {
             return new Object[0][0];
         }
     }
-
-
 
     public void updateUserFile() {
         String username = currentUser.getUser_name();
@@ -616,9 +652,19 @@ public class MainBoard extends JFrame {
         return new Object[0][0];
     }
 
+    private void creatUser(JSONObject userData, String storedParentPassword, String storedChildPassword){
+        currentUser = new User(userData.getString("user_name"), storedParentPassword, storedChildPassword);
+        currentUser.setCurrent(userData.getDoubleValue("current"));
+        currentUser.setSaving(userData.getDoubleValue("saving"));
+        currentUser.setTotal_reward(userData.getDoubleValue("total_reward"));
+        currentUser.setGoal_content(userData.getString("goal_content"));
+        currentUser.setGoal_value(userData.getDoubleValue("goal_value"));
+        currentUser.setCredit_level(userData.getIntValue("credit_level"));
+    }
+
     private void signIn() {
         String username = usernameField.getText();
-        String password = new String(passwordField.getPassword());
+        String password = HashGenerator.generateSHA256(new String(passwordField.getPassword()));
 
         File userDataDir = new File("src/main/java/UserData/" + username);
         if (userDataDir.exists() && userDataDir.isDirectory()) {
@@ -626,15 +672,15 @@ public class MainBoard extends JFrame {
             if (userFile.exists() && userFile.isFile()) {
                 try (FileReader reader = new FileReader(userFile)) {
                     JSONObject userData = JSON.parseObject(reader);
-                    String storedPassword = userData.getString("password");
-                    if (password.equals(storedPassword)) {
-                        currentUser = new User(userData.getString("user_name"), storedPassword);
-                        currentUser.setCurrent(userData.getDoubleValue("current"));
-                        currentUser.setSaving(userData.getDoubleValue("saving"));
-                        currentUser.setTotal_reward(userData.getDoubleValue("total_reward"));
-                        currentUser.setGoal_content(userData.getString("goal_content"));
-                        currentUser.setGoal_value(userData.getDoubleValue("goal_value"));
-                        currentUser.setCredit_level(userData.getIntValue("credit_level"));
+                    String storedParentPassword = userData.getString("parent_password");
+                    String storedChildPassword = userData.getString("child_password");
+                    if (password.equals(storedParentPassword)) {
+                        isParent = true;
+                        creatUser(userData, storedParentPassword, storedChildPassword);
+                        homepage();
+                    } else if (password.equals(storedChildPassword)) {
+                        isParent = false;
+                        creatUser(userData, storedParentPassword, storedChildPassword);
                         homepage();
                     } else {
                         JOptionPane.showMessageDialog(this, "Invalid Password");
@@ -642,7 +688,8 @@ public class MainBoard extends JFrame {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-            } else {
+            }
+            else {
                 JOptionPane.showMessageDialog(this, "User Data Not Found");
             }
         } else {

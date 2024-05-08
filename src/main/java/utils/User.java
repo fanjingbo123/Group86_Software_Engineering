@@ -2,7 +2,8 @@ package utils;
 
 public class User {
     private String user_name;
-    private String password;
+    private String parent_password;
+    private String child_password;
     private double saving = 0;
     private double current = 0;
     private int credit_level = 1;
@@ -10,11 +11,10 @@ public class User {
     private String goal_content = " ";
     private double goal_value = 0;
 
-    public User(String user_name, String password) {
+    public User(String user_name, String parent_password, String child_password) {
         this.user_name = user_name;
-        this.password = password;
-
-        //开始存
+        this.parent_password = parent_password;
+        this.child_password = child_password;
     }
 
     public String getUser_name() {
@@ -25,12 +25,20 @@ public class User {
         this.user_name = user_name;
     }
 
-    public String getPassword() {
-        return password;
+    public String getParent_password() {
+        return parent_password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setParent_password(String parent_password) {
+        this.parent_password = parent_password;
+    }
+
+    public String getChild_password() {
+        return child_password;
+    }
+
+    public void setChild_password(String child_password) {
+        this.child_password = child_password;
     }
 
     public double getCurrent() {

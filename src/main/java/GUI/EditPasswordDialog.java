@@ -1,6 +1,7 @@
 package GUI;
 
 import com.alibaba.fastjson2.JSON;
+import utils.HashGenerator;
 import utils.User;
 
 import javax.swing.*;
@@ -64,11 +65,11 @@ public class EditPasswordDialog extends JDialog {
     }
 
     private void editPassword() {
-        String originalPassword = originalPasswordField.getText();
+        String originalPassword = HashGenerator.generateSHA256(originalPasswordField.getText());
         String newPassword = new String(newPasswordField.getPassword());
         String newPasswordAgain = new String(newPasswordAgainField.getPassword());
 
-        if (!originalPassword.equals(currentUser.getPassword())) {
+        if (!originalPassword.equals(currentUser.getParent_password())) {
             JOptionPane.showMessageDialog(this, "Original password is incorrect.");
             return;
         }
@@ -79,7 +80,7 @@ public class EditPasswordDialog extends JDialog {
         }
 
         // Update user's password
-        currentUser.setPassword(newPassword);
+        currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
 
         // Save updated user information to JSON file
         saveUserToFile();
