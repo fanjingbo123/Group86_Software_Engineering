@@ -14,7 +14,6 @@ public class DepositDialog extends JDialog {
     private User currentUser;
     private MainBoard mainBoard;
     private JLabel currentBalanceLabel;
-
     public DepositDialog(MainBoard owner, User currentUser) {
         super(owner, "Deposit Funds", true);
         setSize(300, 200);
@@ -56,13 +55,28 @@ public class DepositDialog extends JDialog {
                         JOptionPane.showMessageDialog(DepositDialog.this, "Please enter a valid amount greater than 0", "Invalid Amount", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                    currentUser.setSaving(currentUser.getSaving() + amount); // 更新用户的当前余额
-                    currentUser.setCurrent(currentUser.getCurrent() - amount);
+                    if (amount > currentUser.getCurrent()) {
+                        JOptionPane.showMessageDialog(DepositDialog.this, "Deposit amount exceeds current account balance", "Invalid Operation", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    currentUser.setSaving(currentUser.getSaving() + amount); // 更新用户的saving账户余额
+                    currentUser.setCurrent(currentUser.getCurrent() - amount); // 更新用户的current账户余额
                     mainBoard.logTransaction(amount, false, "saving", null);
                     mainBoard.logTransaction(amount, true, "current", null);
+                    if (!currentUser.hasReceived200Bonus() && currentUser.getSaving() >= 200) {
+                        currentUser.setSaving(currentUser.getSaving() + 20);
+                        currentUser.setReceived200Bonus(true);
+                        mainBoard.logTransaction(20, false, "saving", null);
+                    }
+                    if (!currentUser.hasReceived500Bonus() && currentUser.getSaving() >= 500) {
+                        currentUser.setSaving(currentUser.getSaving() + 50);
+                        currentUser.setReceived500Bonus(true);
+                        mainBoard.logTransaction(50, false, "saving", null);
+                    }
                     mainBoard.refreshTransactionRecordPage(); // 刷新交易记录页面
                     mainBoard.updateUserFile();
                     dispose(); // 关闭窗口
+
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(DepositDialog.this, "Please enter a valid number for the amount", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 } catch (IOException ex) {
@@ -70,6 +84,7 @@ public class DepositDialog extends JDialog {
                 }
             }
         });
+
 
         cancelButton.addActionListener(new ActionListener() {
             @Override

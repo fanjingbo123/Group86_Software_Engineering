@@ -10,6 +10,9 @@ public class User {
     private double total_reward = 0;
     private String goal_content = " ";
     private double goal_value = 0;
+    private boolean hasReceived200Bonus = false;
+    private boolean hasReceived500Bonus = false;
+
 
     public User(String user_name, String parent_password, String child_password) {
         this.user_name = user_name;
@@ -87,5 +90,20 @@ public class User {
 
     public void setGoal_value(double goal_value) {
         this.goal_value = goal_value;
+    }
+    public boolean hasReceived200Bonus() {
+        return hasReceived200Bonus;
+    }
+
+    public void setReceived200Bonus(boolean received) {
+        hasReceived200Bonus = received;
+    }
+
+    public boolean hasReceived500Bonus() {
+        return hasReceived500Bonus;
+    }
+
+    public void setReceived500Bonus(boolean received) {
+        hasReceived500Bonus = received;
     }
 }
