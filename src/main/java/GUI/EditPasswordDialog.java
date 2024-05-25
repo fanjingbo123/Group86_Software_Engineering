@@ -91,15 +91,15 @@ public class EditPasswordDialog extends JDialog {
         else if (newPassword.isEmpty() || newPasswordAgain.isEmpty()) {
             JOptionPane.showMessageDialog(this, "New passwords is empty");
             refresh();
+        }else{
+            // Update user's password
+            currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
+
+            // Save updated user information to JSON file
+            saveUserToFile();
+
+            JOptionPane.showMessageDialog(this, "Password updated successfully.");
         }
-
-        // Update user's password
-        currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
-
-        // Save updated user information to JSON file
-        saveUserToFile();
-
-        JOptionPane.showMessageDialog(this, "Password updated successfully.");
     }
 
     public void refresh() {
