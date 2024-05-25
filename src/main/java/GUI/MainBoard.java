@@ -37,7 +37,7 @@ public class MainBoard extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
-
+        setResizable(false);
         // Top panel
         JPanel topPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Bank", SwingConstants.CENTER);
