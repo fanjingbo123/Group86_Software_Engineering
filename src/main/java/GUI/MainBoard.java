@@ -30,6 +30,11 @@ public class MainBoard extends JFrame {
     private User currentUser;
     private boolean isParent = false;
 
+    /**
+     * Constructs the main login window of the Virtual Bank application.
+     * This constructor initializes the frame, sets up the layout, and adds all necessary components such as
+     * title labels, image labels, and input fields for username and password.
+     */
     public MainBoard() {
         // Frame initialization
         super("Login");
@@ -38,25 +43,25 @@ public class MainBoard extends JFrame {
         setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
         setResizable(false);
-        // Top panel
+
+        // Top panel with the bank title
         JPanel topPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Bank", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         topPanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Image panel
+        // Image panel for displaying the bank icon
         JPanel imagePanel = new JPanel();
-        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // 使用BoxLayout
-        imagePanel.add(Box.createVerticalGlue()); // 添加垂直填充
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
+        imagePanel.add(Box.createVerticalGlue());
 
         ImageIcon icon = new ImageIcon(getClass().getResource("/image/bank.png"));
         JLabel imageLabel = new JLabel(icon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // 设置图片水平居中
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         imagePanel.add(imageLabel);
+        imagePanel.add(Box.createVerticalGlue());
 
-        imagePanel.add(Box.createVerticalGlue()); // 再添加垂直填充以确保图片垂直居中
-
-        // Inputs panel
+        // Input panel for entering username and password
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
@@ -64,7 +69,7 @@ public class MainBoard extends JFrame {
         JPanel usernamePanel = new JPanel();
         usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.X_AXIS));
         usernamePanel.add(new JLabel("Username:"));
-        usernameField = new JTextField(15);
+        JTextField usernameField = new JTextField(15);
         Dimension textFieldSize = new Dimension(200, 30);
         usernameField.setPreferredSize(textFieldSize);
         usernameField.setMaximumSize(textFieldSize);
@@ -74,29 +79,29 @@ public class MainBoard extends JFrame {
         JPanel passwordPanel = new JPanel();
         passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.X_AXIS));
         passwordPanel.add(new JLabel("Password:"));
-        passwordField = new JPasswordField(15);
+        JPasswordField passwordField = new JPasswordField(15);
         passwordField.setPreferredSize(textFieldSize);
         passwordField.setMaximumSize(textFieldSize);
         passwordField.setMinimumSize(textFieldSize);
         passwordPanel.add(passwordField);
 
-        // 将各个面板添加到主面板
-        inputPanel.add(Box.createVerticalStrut(20)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(20));
         inputPanel.add(usernamePanel);
-        inputPanel.add(Box.createVerticalStrut(10)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(10));
         inputPanel.add(passwordPanel);
 
-        // Buttons panel
+        // Button panel with sign up and log in buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-        signUpButton = new JButton("Sign Up");
-        signInButton = new JButton("Log In");
+        JButton signUpButton = new JButton("Sign Up");
+        JButton signInButton = new JButton("Log In");
         signUpButton.setPreferredSize(new Dimension(100, 25));
         signInButton.setPreferredSize(new Dimension(100, 25));
 
+        // Register the sign-up button to open the sign-up panel on click
         signUpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                signUpPanel();
+                signUpPanel(); // Assuming signUpPanel is a method that handles the sign up logic
             }
         });
 

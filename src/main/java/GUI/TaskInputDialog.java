@@ -6,13 +6,17 @@ import com.alibaba.fastjson.JSONObject;
 import utils.Task;
 import utils.User;
 
-import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
 import java.util.*;
 
+/**
+ * A dialog window for adding new tasks.
+ * This class provides a graphical user interface for users to input new tasks with specific details such as content, level, reward, and deadline.
+ */
 public class TaskInputDialog extends JDialog {
     private User currentUser;
 
@@ -23,6 +27,12 @@ public class TaskInputDialog extends JDialog {
     private JComboBox<Integer> monthComboBox;
     private JComboBox<Integer> dayComboBox;
 
+    /**
+     * Constructs a new TaskInputDialog.
+     *
+     * @param parent the parent frame from which the dialog is displayed
+     * @param currentUser the user who is adding the task
+     */
     public TaskInputDialog(Frame parent, User currentUser) {
         super(parent, "Add Task", true);
         setSize(500, 250);
@@ -32,19 +42,24 @@ public class TaskInputDialog extends JDialog {
 
         JPanel panel = new JPanel(new GridLayout(6, 2));
 
-        JLabel taskContentLabel = new JLabel("Task Content:");
+        // Initialize and add components for task input
+        panel.add(new JLabel("Task Content:"));
         taskContentField = new JTextField();
-        JLabel taskLevelLabel = new JLabel("Task Level:");
+        panel.add(taskContentField);
+
+        panel.add(new JLabel("Task Level:"));
         String[] levels = {"1", "2", "3", "4", "5"};
         taskLevelComboBox = new JComboBox<>(levels);
-        JLabel rewardLabel = new JLabel("Reward:");
+        panel.add(taskLevelComboBox);
+
+        panel.add(new JLabel("Reward:"));
         rewardField = new JComboBox<>();
         for (int i = 1; i <= 100; i++) {
             rewardField.addItem((double)i);
         }
+        panel.add(rewardField);
 
-        JLabel deadlineLabel = new JLabel("Deadline:");
-
+        panel.add(new JLabel("Deadline:"));
         JPanel deadlinePanel = new JPanel(new GridLayout(1, 3));
         yearComboBox = new JComboBox<>();
         monthComboBox = new JComboBox<>();
@@ -52,58 +67,42 @@ public class TaskInputDialog extends JDialog {
         deadlinePanel.add(yearComboBox);
         deadlinePanel.add(monthComboBox);
         deadlinePanel.add(dayComboBox);
+        panel.add(deadlinePanel);
 
         JButton addToTaskListButton = new JButton("Add to List");
         JButton cancelButton = new JButton("Cancel");
-
-        panel.add(taskContentLabel);
-        panel.add(taskContentField);
-        panel.add(taskLevelLabel);
-        panel.add(taskLevelComboBox);
-        panel.add(rewardLabel);
-        panel.add(rewardField);
-        panel.add(deadlineLabel);
-        panel.add(deadlinePanel);
         panel.add(addToTaskListButton);
         panel.add(cancelButton);
 
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        cancelButton.addActionListener(e -> dispose());
 
         add(panel);
 
-        // Populate yearComboBox with current year and next 10 years
+        // Populate year, month, and day combo boxes with appropriate values
+        populateDateComboBoxes();
+
+        addToTaskListButton.addActionListener(e -> addTaskToList());
+    }
+
+    /**
+     * Populates year, month, and day combo boxes based on current date.
+     */
+    private void populateDateComboBoxes() {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         for (int i = currentYear; i <= currentYear + 10; i++) {
             yearComboBox.addItem(i);
         }
 
-        // Populate monthComboBox with months from 1 to 12
         for (int i = 1; i <= 12; i++) {
             monthComboBox.addItem(i);
         }
 
-        // Populate dayComboBox based on selected month and year
-        updateDayComboBox();
-        monthComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateDayComboBox();
-            }
-        });
-
-        addToTaskListButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addTaskToList();
-            }
-        });
+        monthComboBox.addActionListener(e -> updateDayComboBox());
     }
 
+    /**
+     * Updates the day combo box to reflect the correct number of days based on the selected year and month.
+     */
     private void updateDayComboBox() {
         int year = (int) yearComboBox.getSelectedItem();
         int month = (int) monthComboBox.getSelectedItem();
@@ -114,6 +113,10 @@ public class TaskInputDialog extends JDialog {
         }
     }
 
+    /**
+     * Handles the action of adding a new task to the list.
+     * Validates the input data, creates a new Task object, and saves it to a file.
+     */
     private void addTaskToList() {
         String taskContent = taskContentField.getText();
         int taskLevel = Integer.parseInt((String) taskLevelComboBox.getSelectedItem());
@@ -122,32 +125,25 @@ public class TaskInputDialog extends JDialog {
         int month = (int) monthComboBox.getSelectedItem();
         int day = (int) dayComboBox.getSelectedItem();
 
-        // Create a Calendar object for the selected date
         Calendar selectedDate = new GregorianCalendar(year, month - 1, day);
-
-        // Get the current date
         Calendar currentDate = Calendar.getInstance();
 
-        // Check if the selected date is in the future
         if (selectedDate.after(currentDate)) {
             Date deadline = selectedDate.getTime();
-
-            // Generate unique task ID
             String taskId = UUID.randomUUID().toString();
-
-            // Create Task object
             Task newTask = new Task(taskId, taskContent, taskLevel, reward, deadline, false);
-
-            // Add Task object to user's task list JSON file
             saveTaskToFile(newTask);
-
-            dispose(); // Close the dialog
+            dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Please select a future date for the deadline.");
         }
     }
 
-
+    /**
+     * Saves the new task to a JSON file associated with the current user.
+     *
+     * @param newTask the new Task object to be saved
+     */
     private void saveTaskToFile(Task newTask) {
         String username = currentUser.getUser_name();
         String taskFileName = "src/main/java/UserData/" + username + "/" + username + "_task.json";
@@ -158,7 +154,6 @@ public class TaskInputDialog extends JDialog {
                 taskFile.createNewFile();
             }
 
-            // 读取任务文件内容
             StringBuilder taskJsonString = new StringBuilder();
             try (FileReader fileReader = new FileReader(taskFile)) {
                 int character;
@@ -167,15 +162,7 @@ public class TaskInputDialog extends JDialog {
                 }
             }
 
-            // 解析任务文件内容为 JSON 数组
-            JSONArray taskArray;
-            if (taskJsonString.length() == 0) {
-                taskArray = new JSONArray();
-            } else {
-                taskArray = JSON.parseArray(taskJsonString.toString());
-            }
-
-            // 创建新任务的 JSON 对象
+            JSONArray taskArray = (taskJsonString.length() == 0) ? new JSONArray() : JSON.parseArray(taskJsonString.toString());
             JSONObject newTaskJson = new JSONObject();
             newTaskJson.put("task_id", newTask.getTask_id());
             newTaskJson.put("task_content", newTask.getTask_content());
@@ -184,10 +171,8 @@ public class TaskInputDialog extends JDialog {
             newTaskJson.put("DDL", newTask.getDDL());
             newTaskJson.put("flag", newTask.isFlag());
 
-            // 将新任务添加到 JSON 数组
             taskArray.add(newTaskJson);
 
-            // 将更新后的 JSON 数组写回任务文件
             try (FileWriter fileWriter = new FileWriter(taskFileName)) {
                 fileWriter.write(taskArray.toJSONString());
             }
