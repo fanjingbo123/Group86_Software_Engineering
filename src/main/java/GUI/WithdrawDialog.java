@@ -19,6 +19,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * A dialog window for withdrawing funds from user accounts.
+ * This class provides the functionality to withdraw funds from either a current or savings account.
+ */
 public class WithdrawDialog extends JDialog {
     private JRadioButton currentAccountButton;
     private JRadioButton savingAccountButton;
@@ -28,19 +32,28 @@ public class WithdrawDialog extends JDialog {
     private JButton cancelButton;
     private User currentUser;
     public MainBoard mainBoard;
+
+    /**
+     * Constructs a new WithdrawDialog.
+     *
+     * @param owner the MainBoard frame that owns this dialog
+     * @param currentUser the user who is performing the withdrawal
+     */
     public WithdrawDialog(MainBoard owner, User currentUser) {
         super(owner, "Withdraw Funds", true);
         setSize(300, 200);
         setLocationRelativeTo(owner);
-        setLayout(new BorderLayout()); // 使用边界布局
+        setLayout(new BorderLayout());
+
         this.mainBoard = owner;
         this.currentUser = currentUser;
-        // 账户类型选择 - 使用单选按钮
+
+        // Account selection panel
         JPanel accountPanel = new JPanel();
         accountPanel.setBorder(BorderFactory.createTitledBorder("Select Account:"));
         currentAccountButton = new JRadioButton("Current");
         savingAccountButton = new JRadioButton("Saving");
-        currentAccountButton.setSelected(true);  // 默认选择
+        currentAccountButton.setSelected(true);
 
         accountButtonGroup = new ButtonGroup();
         accountButtonGroup.add(currentAccountButton);
@@ -49,14 +62,14 @@ public class WithdrawDialog extends JDialog {
         accountPanel.add(savingAccountButton);
         add(accountPanel, BorderLayout.NORTH);
 
-        // 输入取款金额
+        // Amount input panel
         JPanel amountPanel = new JPanel(new FlowLayout());
-        amountField = new JTextField(10);  // 设置文本框大小
+        amountField = new JTextField(10);
         amountPanel.add(new JLabel("Amount:"));
         amountPanel.add(amountField);
         add(amountPanel, BorderLayout.CENTER);
 
-        // 按钮面板
+        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         withdrawButton = new JButton("Withdraw");
         cancelButton = new JButton("Cancel");
@@ -67,16 +80,13 @@ public class WithdrawDialog extends JDialog {
         setupActions();
     }
 
+    /**
+     * Sets up the action listeners for the withdrawal and cancel buttons.
+     */
     private void setupActions() {
-        // 执行取款
         withdrawButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (currentUser == null) {
-                    JOptionPane.showMessageDialog(WithdrawDialog.this, "No user is currently logged in.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
                 try {
                     String accountType = currentAccountButton.isSelected() ? "current" : "saving";
                     double amount = Double.parseDouble(amountField.getText());
@@ -85,58 +95,56 @@ public class WithdrawDialog extends JDialog {
                         return;
                     }
                     performWithdraw(accountType, amount);
-                    dispose(); // 关闭对话框
+                    dispose();
                     mainBoard.refreshTransactionRecordPage();
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(WithdrawDialog.this, "Please enter a valid number for the amount", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                    JOptionPane.showMessageDialog(WithdrawDialog.this, "Error in processing the withdrawal", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-        // 取消操作并关闭对话框
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+
+        cancelButton.addActionListener(e -> dispose());
     }
 
+    /**
+     * Performs the withdrawal operation and updates the user's account balance.
+     *
+     * @param accountType the type of account from which to withdraw
+     * @param amount the amount to withdraw
+     * @throws IOException if there is an error writing the transaction to the file
+     */
     private void performWithdraw(String accountType, double amount) throws IOException {
-        double accountBalance = 0;
-        if (accountType.equals("current")) {
-            accountBalance = currentUser.getCurrent();
-        } else if (accountType.equals("saving")) {
-            accountBalance = currentUser.getSaving();
-        }
+        double accountBalance = accountType.equals("current") ? currentUser.getCurrent() : currentUser.getSaving();
 
-        // 检查取款金额是否超过账户余额
         if (amount > accountBalance) {
             JOptionPane.showMessageDialog(this, "Insufficient funds in your " + accountType + " account.", "Withdrawal Error", JOptionPane.ERROR_MESSAGE);
-            return; // 退出方法，不继续执行取款
+            return;
         }
 
-        // 执行取款
         if (accountType.equals("current")) {
             currentUser.setCurrent(currentUser.getCurrent() - amount);
-        } else if (accountType.equals("saving")) {
+        } else {
             currentUser.setSaving(currentUser.getSaving() - amount);
-            currentUser.setCurrent(currentUser.getCurrent() + amount);
-            recordTransaction(amount, false, "current", null);
         }
 
-        // 记录交易
-        recordTransaction(amount, true, accountType, null);  // 使用负数记录支出
+        recordTransaction(amount, true, accountType, null);
         mainBoard.updateUserFile();
     }
 
-
+    /**
+     * Records a transaction in the user's transaction file.
+     *
+     * @param amount the amount of the transaction
+     * @param isExpense whether the transaction is an expense (true if withdrawal)
+     * @param accountType the type of account affected
+     * @param time the time of the transaction
+     * @throws IOException if there is an error writing the transaction to the file
+     */
     public void recordTransaction(double amount, boolean isExpense, String accountType, String time) throws IOException {
-        if (time == null || time.isEmpty()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            time = sdf.format(new Date());
-        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        time = (time == null || time.isEmpty()) ? sdf.format(new Date()) : time;
 
         JSONObject transactionDetails = new JSONObject();
         transactionDetails.put("time", time);
@@ -147,24 +155,27 @@ public class WithdrawDialog extends JDialog {
         updateTransactionFile(transactionDetails);
     }
 
+    /**
+     * Updates the transaction file with a new transaction.
+     *
+     * @param transactionDetails the details of the new transaction to add
+     * @throws IOException if there is an error accessing the file
+     */
     private void updateTransactionFile(JSONObject transactionDetails) throws IOException {
         String username = currentUser.getUser_name();
         String transactionFilePath = "src/main/java/UserData/" + username + "/" + username + "_transaction.json";
         JSONArray transactions;
 
         File transactionFile = new File(transactionFilePath);
-        if (transactionFile.exists()) {
-            String jsonText = new String(Files.readAllBytes(Paths.get(transactionFilePath)), StandardCharsets.UTF_8);
-            transactions = JSON.parseArray(jsonText);
-        } else {
-            transactions = new JSONArray();
+        if (!transactionFile.exists()) {
+            transactionFile.createNewFile();
         }
+        String jsonText = new String(Files.readAllBytes(Paths.get(transactionFilePath)), StandardCharsets.UTF_8);
+        transactions = JSON.parseArray(jsonText);
 
         transactions.add(transactionDetails);
-
         try (FileWriter fileWriter = new FileWriter(transactionFile)) {
             fileWriter.write(transactions.toJSONString());
         }
     }
-
 }

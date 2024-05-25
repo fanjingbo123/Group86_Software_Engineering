@@ -12,39 +12,44 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * A dialog window for editing the user's password.
+ * This class provides a graphical user interface to change a user's password, ensuring the original password is correct and that the new password is entered identically twice.
+ */
 public class EditPasswordDialog extends JDialog {
     private JTextField originalPasswordField;
     private JPasswordField newPasswordField;
     private JPasswordField newPasswordAgainField;
     private User currentUser;
-    public JButton editButton = new JButton("Edit");
-    public JButton backButton = new JButton("Back");
+    public JButton editButton;
+    public JButton backButton;
 
+    /**
+     * Constructs a new EditPasswordDialog.
+     *
+     * @param parent the parent frame from which the dialog is displayed
+     * @param currentUser the user whose password is to be changed
+     */
     public EditPasswordDialog(Frame parent, User currentUser) {
         super(parent, "Edit Password", true);
         setSize(300, 200);
         setLocationRelativeTo(parent);
-
         this.currentUser = currentUser;
 
         JPanel panel = new JPanel(new GridLayout(4, 2));
 
-        JLabel originalPasswordLabel = new JLabel("Original Password:");
+        panel.add(new JLabel("Original Password:"));
         originalPasswordField = new JTextField();
-        JLabel newPasswordLabel = new JLabel("New Password:");
-        newPasswordField = new JPasswordField();
-        JLabel newPasswordAgainLabel = new JLabel("New Password Again:");
-        newPasswordAgainField = new JPasswordField();
-
-         editButton = new JButton("Edit");
-         backButton = new JButton("Back");
-
-        panel.add(originalPasswordLabel);
         panel.add(originalPasswordField);
-        panel.add(newPasswordLabel);
+        panel.add(new JLabel("New Password:"));
+        newPasswordField = new JPasswordField();
         panel.add(newPasswordField);
-        panel.add(newPasswordAgainLabel);
+        panel.add(new JLabel("New Password Again:"));
+        newPasswordAgainField = new JPasswordField();
         panel.add(newPasswordAgainField);
+
+        editButton = new JButton("Edit");
+        backButton = new JButton("Back");
         panel.add(editButton);
         panel.add(backButton);
 
@@ -66,6 +71,10 @@ public class EditPasswordDialog extends JDialog {
         add(panel);
     }
 
+    /**
+     * Handles the password editing process.
+     * Validates the original password, checks if the new passwords match, and updates the user's password if all validations pass.
+     */
     private void editPassword() {
         String originalPassword = HashGenerator.generateSHA256(originalPasswordField.getText());
         String newPassword = new String(newPasswordField.getPassword());
@@ -81,34 +90,23 @@ public class EditPasswordDialog extends JDialog {
             return;
         }
 
-        // Update user's password
         currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
-
-        // Save updated user information to JSON file
         saveUserToFile();
-
         JOptionPane.showMessageDialog(this, "Password updated successfully.");
     }
 
+    /**
+     * Saves the updated user information to a JSON file.
+     * This method serializes the User object into JSON format and writes it to a file on disk.
+     */
     private void saveUserToFile() {
         String username = currentUser.getUser_name();
         String userFileName = "src/main/java/UserData/" + username + "/" + username + ".json";
 
-        try {
-            File userFile = new File(userFileName);
-            if (!userFile.exists()) {
-                userFile.createNewFile();
-            }
-
-            // 将用户对象转换为 JSON 字符串
-            String userJson = JSON.toJSONString(currentUser);
-
-            // 将 JSON 字符串写入用户文件
-            try (FileWriter fileWriter = new FileWriter(userFileName)) {
-                fileWriter.write(userJson);
-            }
+        try (FileWriter fileWriter = new FileWriter(new File(userFileName), false)) {
+            fileWriter.write(JSON.toJSONString(currentUser));
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error while saving user data: " + e.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 
+/**
+ * MainBoard serves as the primary JFrame for the Virtual Bank application, managing user interactions for login,
+ * registration, task management, and financial transactions.
+ */
 public class MainBoard extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -30,6 +34,11 @@ public class MainBoard extends JFrame {
     private User currentUser;
     private boolean isParent = false;
 
+    /**
+     * Constructs the main login window of the Virtual Bank application.
+     * This constructor initializes the frame, sets up the layout, and adds all necessary components such as
+     * title labels, image labels, and input fields for username and password.
+     */
     public MainBoard() {
         // Frame initialization
         super("Login");
@@ -38,25 +47,25 @@ public class MainBoard extends JFrame {
         setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
         setResizable(false);
-        // Top panel
+
+        // Top panel with the bank title
         JPanel topPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Bank", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         topPanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Image panel
+        // Image panel for displaying the bank icon
         JPanel imagePanel = new JPanel();
-        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // 使用BoxLayout
-        imagePanel.add(Box.createVerticalGlue()); // 添加垂直填充
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
+        imagePanel.add(Box.createVerticalGlue());
 
         ImageIcon icon = new ImageIcon(getClass().getResource("/image/bank.png"));
         JLabel imageLabel = new JLabel(icon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // 设置图片水平居中
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         imagePanel.add(imageLabel);
+        imagePanel.add(Box.createVerticalGlue());
 
-        imagePanel.add(Box.createVerticalGlue()); // 再添加垂直填充以确保图片垂直居中
-
-        // Inputs panel
+        // Input panel for entering username and password
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
@@ -64,7 +73,7 @@ public class MainBoard extends JFrame {
         JPanel usernamePanel = new JPanel();
         usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.X_AXIS));
         usernamePanel.add(new JLabel("Username:"));
-        usernameField = new JTextField(15);
+        JTextField usernameField = new JTextField(15);
         Dimension textFieldSize = new Dimension(200, 30);
         usernameField.setPreferredSize(textFieldSize);
         usernameField.setMaximumSize(textFieldSize);
@@ -74,29 +83,29 @@ public class MainBoard extends JFrame {
         JPanel passwordPanel = new JPanel();
         passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.X_AXIS));
         passwordPanel.add(new JLabel("Password:"));
-        passwordField = new JPasswordField(15);
+        JPasswordField passwordField = new JPasswordField(15);
         passwordField.setPreferredSize(textFieldSize);
         passwordField.setMaximumSize(textFieldSize);
         passwordField.setMinimumSize(textFieldSize);
         passwordPanel.add(passwordField);
 
-        // 将各个面板添加到主面板
-        inputPanel.add(Box.createVerticalStrut(20)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(20));
         inputPanel.add(usernamePanel);
-        inputPanel.add(Box.createVerticalStrut(10)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(10));
         inputPanel.add(passwordPanel);
 
-        // Buttons panel
+        // Button panel with sign up and log in buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-        signUpButton = new JButton("Sign Up");
-        signInButton = new JButton("Log In");
+        JButton signUpButton = new JButton("Sign Up");
+        JButton signInButton = new JButton("Log In");
         signUpButton.setPreferredSize(new Dimension(100, 25));
         signInButton.setPreferredSize(new Dimension(100, 25));
 
+        // Register the sign-up button to open the sign-up panel on click
         signUpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                signUpPanel();
+                signUpPanel(); // Assuming signUpPanel is a method that handles the sign up logic
             }
         });
 
@@ -124,6 +133,9 @@ public class MainBoard extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Opens the sign-up panel allowing new users to register.
+     */
     private void signUpPanel() {
         setTitle("Sign Up");
         getContentPane().removeAll();
@@ -261,6 +273,9 @@ public class MainBoard extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Reverts the display back to the login screen.
+     */
     private void backToLogin() {
         setTitle("Login");
         getContentPane().removeAll();
@@ -269,6 +284,9 @@ public class MainBoard extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Saves the current user's data to a file.
+     */
     private void saveUserToFile() {
         String username = currentUser.getUser_name();
         String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
@@ -296,6 +314,9 @@ public class MainBoard extends JFrame {
         }
     }
 
+    /**
+     * Displays the home page after a user has logged in successfully.
+     */
     public void homepage() {
         setTitle("User Dashboard");
         getContentPane().removeAll();
@@ -469,6 +490,11 @@ public class MainBoard extends JFrame {
         });
     }
 
+    /**
+     * Retrieves a list of tasks for the current user.
+     *
+     * @return an ArrayList of Task objects.
+     */
     private static ArrayList<Task> getTasks(Object[][] rowData) {
         ArrayList<Task> taskArrayList = new ArrayList<>();
         for (Object[] rowDatum : rowData) {
@@ -487,43 +513,47 @@ public class MainBoard extends JFrame {
         return taskArrayList;
     }
 
+    /**
+     * Displays the transaction record page, which shows a table of all transactions related to the current user.
+     * This page includes buttons for navigating back to the homepage, and for initiating withdrawal and deposit actions if the user has parental access.
+     *
+     * The transaction record includes details such as the time of the transaction, whether it was an expense or an income,
+     * and the type of account affected by the transaction.
+     */
     public void transactionRecordPage() {
-        setTitle("Transaction Record");
-        getContentPane().removeAll();
+        setTitle("Transaction Record"); // Set the title of the window
+        getContentPane().removeAll(); // Clear previous content
         revalidate();
-        setSize(600, 400); // 设置页面大小
+        setSize(600, 400); // Set the size of the window
 
-        // 总体布局面板
+        // Main panel that holds all sub-panels
         JPanel panel = new JPanel(new BorderLayout());
 
         // 顶部面板，用于显示标题和账户信息
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 
-        // 标题标签
+        // Top panel that displays the title and account balances
         JLabel titleLabel = new JLabel("Transaction Record", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         topPanel.add(titleLabel);
 
-        // 账户信息标签
+        // Labels displaying current and saving account balances
         JLabel current = new JLabel("Current: " + currentUser.getCurrent(), SwingConstants.CENTER);
         JLabel saving = new JLabel("Saving: " + currentUser.getSaving(), SwingConstants.CENTER);
         topPanel.add(current);
         topPanel.add(saving);
 
-        // 将顶部面板添加到主面板的北部
-        panel.add(topPanel, BorderLayout.NORTH);
+        panel.add(topPanel, BorderLayout.NORTH); // Add the top panel to the north of the main panel
 
-        // 创建表格的列名
+        // Define column names for the transaction table
         String[] columnNames = {"Time", "Expense/Income", "Account Type"};
 
-        // 读取交易数据
+        // Load transaction data and create a table
         Object[][] data = loadTransactionData();
-
-        // 创建表格
         JTable table = new JTable(data, columnNames);
-        JScrollPane scrollPane = new JScrollPane(table); // 让表格可滚动
-        panel.add(scrollPane, BorderLayout.CENTER); // 添加到中间
+        JScrollPane scrollPane = new JScrollPane(table); // Make the table scrollable
+        panel.add(scrollPane, BorderLayout.CENTER); // Add the scroll pane to the center of the main panel
 
         // 底部的按钮
         JPanel bottomPanel = new JPanel();
@@ -566,10 +596,22 @@ public class MainBoard extends JFrame {
         setVisible(true); // 显示页面
     }
 
+    /**
+     * Refreshes the transaction record page to show updated information.
+     */
     public void refreshTransactionRecordPage() {
         transactionRecordPage();  // 假设这是重载交易记录的现有方法
     }
 
+    /**
+     * Logs a transaction for the current user.
+     *
+     * @param amount       The amount of the transaction.
+     * @param isExpense    Indicates whether the transaction is an expense.
+     * @param accountType  The type of account affected by the transaction.
+     * @param time         The time the transaction occurred.
+     * @throws IOException If an I/O error occurs when writing to the file.
+     */
     public void logTransaction(double amount, boolean isExpense, String accountType, String time) throws IOException {
         if (time == null || time.isEmpty()) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -585,6 +627,12 @@ public class MainBoard extends JFrame {
         updateTransaction(transactionDetails);
     }
 
+    /**
+     * Updates the transaction JSON file with a new transaction.
+     *
+     * @param transactionDetails Details of the transaction to log.
+     * @throws IOException If an I/O error occurs when writing to the file.
+     */
     private void updateTransaction(JSONObject transactionDetails) throws IOException {
         String username = currentUser.getUser_name();
         String transactionFilePath = "src/main/java/UserData/" + username + "/" + username + "_transaction.json";
@@ -607,6 +655,11 @@ public class MainBoard extends JFrame {
         }
     }
 
+    /**
+     * Loads transaction data from the file.
+     *
+     * @return a 2D Object array containing the transaction data.
+     */
     private Object[][] loadTransactionData() {
         String username = currentUser.getUser_name();
         String transactionFileName = "src/main/java/UserData/" + username + "/" + username + "_transaction.json";
@@ -639,6 +692,10 @@ public class MainBoard extends JFrame {
         }
     }
 
+    /**
+     * Saves the current user's data to a file.
+     * Serializes the user object to JSON and writes it to the user's data file, creating a new file if necessary.
+     */
     public void updateUserFile() {
         String username = currentUser.getUser_name();
         String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
@@ -662,6 +719,12 @@ public class MainBoard extends JFrame {
         }
     }
 
+    /**
+     * Update task information for the user, typically called after a task is completed or updated.
+     *
+     * @param taskId The ID of the task to update.
+     * @return the reward amount associated with the task.
+     */
     public double updateTask(String taskId) {
 
         String username = currentUser.getUser_name();
@@ -704,6 +767,12 @@ public class MainBoard extends JFrame {
         return 0;
     }
 
+    /**
+     * Loads the user's tasks from a file.
+     * Parses the task data file and constructs a data model for managing tasks within the application.
+     *
+     * @return a two-dimensional array of Objects containing task data suitable for display in a JTable
+     */
     private Object[][] loadTasks() {
         String username = currentUser.getUser_name();
         String taskFilePath = "src/main/java/UserData/" + username + "/" + username + "_task.json";
@@ -751,6 +820,14 @@ public class MainBoard extends JFrame {
         return new Object[0][0];
     }
 
+    /**
+     * Initializes the current user's data from JSON data read from the user file.
+     * This method sets the user details including username, account balances, goals, and password hashes.
+     *
+     * @param userData JSON object containing user data.
+     * @param storedParentPassword The hashed password for the parent's login.
+     * @param storedChildPassword The hashed password for the child's login.
+     */
     private void creatUser(JSONObject userData, String storedParentPassword, String storedChildPassword){
         currentUser = new User(userData.getString("user_name"), storedParentPassword, storedChildPassword);
         currentUser.setCurrent(userData.getDoubleValue("current"));
@@ -761,6 +838,11 @@ public class MainBoard extends JFrame {
         currentUser.setCredit_level(userData.getIntValue("credit_level"));
     }
 
+    /**
+     * Processes the user login, authenticating the username and password against stored data.
+     * If authentication succeeds, it sets the current user and transitions to the user homepage.
+     * Otherwise, it displays an error message.
+     */
     private void signIn() {
         String username = usernameField.getText();
         String password = HashGenerator.generateSHA256(new String(passwordField.getPassword()));
@@ -796,6 +878,10 @@ public class MainBoard extends JFrame {
         }
     }
 
+    /**
+     * Adds components related to user login to the main panel.
+     * This includes setup for user input fields, buttons for signing up and logging in, and layout management.
+     */
     private void addComponentsToLoginPanel() {
         setSize(550, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -885,6 +971,9 @@ public class MainBoard extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
     }
 
+    /**
+     * Main method to run the application. Initializes the main GUI frame on the event dispatch thread.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
