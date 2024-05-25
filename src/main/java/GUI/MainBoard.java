@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Optional;
 
 public class MainBoard extends JFrame {
     private JTextField usernameField;
@@ -237,11 +238,11 @@ public class MainBoard extends JFrame {
         Object[][] filteredData = new Object[taskArrayList.size()][8];
         for (int i = 0; i < taskArrayList.size(); i++){
             filteredData[i][0] = taskArrayList.get(i).getTask_content();
-            filteredData[i][1] = taskArrayList.get(i).getCredit_level();
-            filteredData[i][2] = taskArrayList.get(i).getReward();
+            filteredData[i][1] = (Object) taskArrayList.get(i).getCredit_level();
+            filteredData[i][2] = (Object) taskArrayList.get(i).getReward();
             filteredData[i][3] = taskArrayList.get(i).getDDL();
             filteredData[i][4] = taskArrayList.get(i).getTask_id();
-            filteredData[i][5] = taskArrayList.get(i).isFlag();
+            filteredData[i][5] = (Object) taskArrayList.get(i).isFlag();
         }
 
         JTable taskTable = new JTable(filteredData, columnNames);
@@ -479,8 +480,8 @@ public class MainBoard extends JFrame {
 
         JSONObject transactionDetails = new JSONObject();
         transactionDetails.put("time", time);
-        transactionDetails.put("amount", amount);
-        transactionDetails.put("isExpense", isExpense);
+        transactionDetails.put("amount", Optional.of(amount));
+        transactionDetails.put("isExpense", Optional.of(isExpense));
         transactionDetails.put("accountType", accountType);
 
         updateTransaction(transactionDetails);
@@ -574,7 +575,7 @@ public class MainBoard extends JFrame {
         for (int i = 0; i < taskData.length; i += 1) {
             String id = (String) taskData[i][6];
             if (taskId.equals(id)) {
-                taskData[i][7] = true;
+                taskData[i][7] = (Object) true;
 
                 JSONArray taskArray = new JSONArray();
                 for (Object[] taskDatum : taskData) {
@@ -637,11 +638,11 @@ public class MainBoard extends JFrame {
             Object[][] rowData = new Object[tasks.length][8];
             for (int i = 0; i < tasks.length; i++) {
                 rowData[i][0] = tasks[i].getTask_content();
-                rowData[i][1] = tasks[i].getCredit_level();
-                rowData[i][2] = tasks[i].getReward();
+                rowData[i][1] = (Object) tasks[i].getCredit_level();
+                rowData[i][2] = (Object) tasks[i].getReward();
                 rowData[i][3] = tasks[i].getDDL();
                 rowData[i][6] = tasks[i].getTask_id();
-                rowData[i][7] = tasks[i].isFlag();
+                rowData[i][7] = (Object) tasks[i].isFlag();
             }
 
             return rowData;
