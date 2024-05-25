@@ -49,7 +49,7 @@ public class MainBoard extends JFrame {
         imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // 使用BoxLayout
         imagePanel.add(Box.createVerticalGlue()); // 添加垂直填充
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("bank.png"));
+        ImageIcon icon = new ImageIcon(getClass().getResource("/image/bank.png"));
         JLabel imageLabel = new JLabel(icon);
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // 设置图片水平居中
         imagePanel.add(imageLabel);
