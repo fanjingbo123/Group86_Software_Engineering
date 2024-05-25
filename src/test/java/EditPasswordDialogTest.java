@@ -1,91 +1,108 @@
 import static org.junit.jupiter.api.Assertions.*;
 
 import GUI.EditPasswordDialog;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileWriter;
 import java.lang.reflect.Field;
+
+import com.alibaba.fastjson.JSONObject;
 import utils.HashGenerator;
 import utils.User;
 
-/**
- * Tests for the EditPasswordDialog class.
- * These tests ensure that the password editing functionality properly handles various scenarios,
- * including successful password change, incorrect original password, and non-matching new passwords.
- */
 public class EditPasswordDialogTest {
     private EditPasswordDialog editPasswordDialog;
     private User testUser;
+    private File userFile;
 
-    /**
-     * Sets up the testing environment before each test.
-     * Initializes a test user and an instance of EditPasswordDialog with controlled inputs for testing.
-     *
-     * @throws Exception if reflection fails to access fields or other operations throw exceptions.
-     */
     @BeforeEach
     public void setUp() throws Exception {
+        // Create a test user object
         testUser = new User("testUser", HashGenerator.generateSHA256("originalPassword"), "childPassword");
+
+        // Create the test user data file
+        String userDir = "src/main/java/UserData/testUser";
+        new File(userDir).mkdirs();
+        userFile = new File(userDir, "testUser.json");
+
+        JSONObject userData = new JSONObject();
+        userData.put("parent_password", testUser.getParent_password());
+        userData.put("child_password", testUser.getChild_password());
+        userData.put("username", testUser.getUser_name());
+
+        try (FileWriter fileWriter = new FileWriter(userFile)) {
+            fileWriter.write(userData.toJSONString());
+        }
+
+        // Initialize EditPasswordDialog object
         editPasswordDialog = new EditPasswordDialog(null, testUser);
+
+        // Use reflection to set the initial values of the password fields
         setField(editPasswordDialog, "originalPasswordField", "originalPassword");
         setField(editPasswordDialog, "newPasswordField", "newPassword");
         setField(editPasswordDialog, "newPasswordAgainField", "newPassword");
     }
 
-    /**
-     * Tests that the password is successfully updated when valid original and new passwords are provided.
-     * Asserts that the user's password is updated and that the dialog is closed after the operation.
-     *
-     * @throws Exception if reflection or other operations fail.
-     */
+    @AfterEach
+    public void tearDown() {
+        // Delete the test user data file
+        if (userFile.exists()) {
+            userFile.delete();
+        }
+    }
+
     @Test
     public void testEditPasswordSuccess() throws Exception {
+        // Simulate clicking the "Edit" button
         JButton editButton = (JButton) getField(editPasswordDialog, "editButton");
-        clickButton(editButton);
+        for (ActionListener listener : editButton.getActionListeners()) {
+            listener.actionPerformed(new ActionEvent(editButton, ActionEvent.ACTION_PERFORMED, null));
+        }
+
+        // Verify that the password has been updated
         assertEquals(HashGenerator.generateSHA256("newPassword"), testUser.getParent_password(), "Password should be updated to newPassword");
+
+        // Confirm that the dialog has been closed
         assertFalse(editPasswordDialog.isVisible(), "Dialog should be closed after editing password");
     }
 
-    /**
-     * Tests that the password update fails when an incorrect original password is provided.
-     * Asserts that the password remains unchanged.
-     *
-     * @throws Exception if reflection or other operations fail.
-     */
     @Test
     public void testEditPasswordFailureIncorrectOriginalPassword() throws Exception {
+        // Set incorrect original password
         setField(editPasswordDialog, "originalPasswordField", "wrongPassword");
+
+        // Simulate clicking the "Edit" button
         JButton editButton = (JButton) getField(editPasswordDialog, "editButton");
-        clickButton(editButton);
+        for (ActionListener listener : editButton.getActionListeners()) {
+            listener.actionPerformed(new ActionEvent(editButton, ActionEvent.ACTION_PERFORMED, null));
+        }
+
+        // Verify that the password has not been updated
         assertEquals(HashGenerator.generateSHA256("originalPassword"), testUser.getParent_password(), "Password should not be updated with incorrect original password");
     }
 
-    /**
-     * Tests that the password update fails when the new passwords provided do not match.
-     * Asserts that the password remains unchanged.
-     *
-     * @throws Exception if reflection or other operations fail.
-     */
     @Test
     public void testEditPasswordFailureNewPasswordsDoNotMatch() throws Exception {
+        // Set non-matching new passwords
         setField(editPasswordDialog, "newPasswordField", "newPassword");
         setField(editPasswordDialog, "newPasswordAgainField", "differentPassword");
+
+        // Simulate clicking the "Edit" button
         JButton editButton = (JButton) getField(editPasswordDialog, "editButton");
-        clickButton(editButton);
+        for (ActionListener listener : editButton.getActionListeners()) {
+            listener.actionPerformed(new ActionEvent(editButton, ActionEvent.ACTION_PERFORMED, null));
+        }
+
+        // Verify that the password has not been updated
         assertEquals(HashGenerator.generateSHA256("originalPassword"), testUser.getParent_password(), "Password should not be updated when new passwords do not match");
     }
 
-    /**
-     * Uses reflection to set a field on an object.
-     * This method is used to set values on private fields within the test target object.
-     *
-     * @param target The object on which to set the field.
-     * @param fieldName The name of the field to set.
-     * @param value The value to set.
-     * @throws Exception if the field is not accessible or does not exist.
-     */
     private void setField(Object target, String fieldName, String value) throws Exception {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
@@ -96,30 +113,9 @@ public class EditPasswordDialogTest {
         }
     }
 
-    /**
-     * Uses reflection to retrieve a field value from an object.
-     * This method is critical for accessing private fields of the test target for verification purposes.
-     *
-     * @param target The object from which to retrieve the field.
-     * @param fieldName The name of the field to retrieve.
-     * @return The value of the field.
-     * @throws Exception if the field is not accessible or does not exist.
-     */
     private Object getField(Object target, String fieldName) throws Exception {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(target);
-    }
-
-    /**
-     * Simulates a button click by invoking all action listeners associated with the button.
-     * This method is used to test button functionality without a GUI.
-     *
-     * @param button The button to be clicked.
-     */
-    private void clickButton(JButton button) {
-        for (ActionListener listener : button.getActionListeners()) {
-            listener.actionPerformed(new ActionEvent(button, ActionEvent.ACTION_PERFORMED, null));
-        }
     }
 }
