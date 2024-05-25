@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
@@ -43,10 +42,48 @@ public class WithdrawDialogTest {
         setField(withdrawDialog, "amountField", "200");
     }
 
+
     @Test
     public void testWithdrawFailureInvalidAmount() throws Exception {
         // 设置无效的取款金额
         setField(withdrawDialog, "amountField", "-100");
+
+        // 获取 withdrawButton 并模拟点击 "Withdraw" 按钮
+        JButton withdrawButton = (JButton) getField(withdrawDialog, "withdrawButton");
+        clickButton(withdrawButton);
+
+        // 验证取款是否未更新
+        assertEquals(500.0, testUser.getCurrent(), "Current account should not be updated");
+        assertEquals(100.0, testUser.getSaving(), "Saving account should not be updated");
+    }
+
+
+    @Test
+    public void testWithdrawFailureZeroAmount() throws Exception {
+        // 选择 saving 账户
+        JRadioButton savingAccountButton = (JRadioButton) getField(withdrawDialog, "savingAccountButton");
+        savingAccountButton.setSelected(true);
+
+        // 设置取款金额为零
+        setField(withdrawDialog, "amountField", "0");
+
+        // 获取 withdrawButton 并模拟点击 "Withdraw" 按钮
+        JButton withdrawButton = (JButton) getField(withdrawDialog, "withdrawButton");
+        clickButton(withdrawButton);
+
+        // 验证取款是否未更新
+        assertEquals(500.0, testUser.getCurrent(), "Current account should not be updated");
+        assertEquals(100.0, testUser.getSaving(), "Saving account should not be updated");
+    }
+
+    @Test
+    public void testWithdrawFailureNonNumericAmount() throws Exception {
+        // 选择 current 账户
+        JRadioButton currentAccountButton = (JRadioButton) getField(withdrawDialog, "currentAccountButton");
+        currentAccountButton.setSelected(true);
+
+        // 设置取款金额为非数字
+        setField(withdrawDialog, "amountField", "abc");
 
         // 获取 withdrawButton 并模拟点击 "Withdraw" 按钮
         JButton withdrawButton = (JButton) getField(withdrawDialog, "withdrawButton");
@@ -79,3 +116,4 @@ public class WithdrawDialogTest {
         }
     }
 }
+
