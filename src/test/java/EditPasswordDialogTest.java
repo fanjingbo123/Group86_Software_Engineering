@@ -3,7 +3,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import GUI.EditPasswordDialog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
