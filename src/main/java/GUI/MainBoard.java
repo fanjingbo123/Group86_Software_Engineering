@@ -252,7 +252,16 @@ public class MainBoard extends JFrame {
                 } else if (!child_password.equals(confirmChildPass)) {
                     JOptionPane.showMessageDialog(MainBoard.this, "Child Passwords do not match, please try again.");
                     refresh();
-                } else {
+                } else if (parent_password.length()<6||child_password.length()<6) {
+                    JOptionPane.showMessageDialog(MainBoard.this, "Check your Passwords.\nYour Passwords must be at least 6 characters long.");
+                    refresh();
+                } else if (!parent_password.matches("^[a-zA-Z0-9]+$") || !child_password.matches("^[a-zA-Z0-9]+$") ||
+                        !parent_password.matches(".*[a-zA-Z].*") || !parent_password.matches(".*[0-9].*") ||
+                        !child_password.matches(".*[a-zA-Z].*") || !child_password.matches(".*[0-9].*")) {
+                    JOptionPane.showMessageDialog(MainBoard.this, "Your Passwords must contain and only contain both letters and numbers.");
+                    refresh();
+                }
+                else {
                     currentUser = new User(username, HashGenerator.generateSHA256(parent_password), HashGenerator.generateSHA256(child_password));
                     saveUserToFile();
                     homepage();
@@ -360,7 +369,7 @@ public class MainBoard extends JFrame {
         topPanel.setBorder(emptyBorder);
 
         panel.add(topPanel, BorderLayout.NORTH);
-        
+
         // Middle Panel
         String[] columnNames = {"Task Content", "Credit Level", "Rewards", "DDL", "Finish", "Delete"};
 
