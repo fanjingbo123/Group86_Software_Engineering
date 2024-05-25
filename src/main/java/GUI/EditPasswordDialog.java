@@ -102,6 +102,12 @@ public class EditPasswordDialog extends JDialog {
         JOptionPane.showMessageDialog(this, "Password updated successfully.");
     }
 
+    public void refresh() {
+        originalPasswordField.setText("");
+        newPasswordField.setText("");
+        newPasswordAgainField.setText("");
+    }
+
     /**
      * Saves the updated user information to a JSON file.
      * This method serializes the User object into JSON format and writes it to a file on disk.
