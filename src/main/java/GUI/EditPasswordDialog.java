@@ -13,8 +13,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * A dialog window for editing the user's password.
- * This class provides a graphical user interface to change a user's password, ensuring the original password is correct and that the new password is entered identically twice.
+ * This class represents a dialog window for editing the password of a user.
+ * It provides a graphical interface that allows users to change their password
+ * after verifying the original password and confirming the new password input twice.
  */
 public class EditPasswordDialog extends JDialog {
     private JTextField originalPasswordField;
@@ -25,10 +26,10 @@ public class EditPasswordDialog extends JDialog {
     public JButton backButton;
 
     /**
-     * Constructs a new EditPasswordDialog.
+     * Constructs a new EditPasswordDialog instance.
      *
-     * @param parent the parent frame from which the dialog is displayed
-     * @param currentUser the user whose password is to be changed
+     * @param parent      The parent frame from which the dialog is displayed.
+     * @param currentUser The user whose password is to be changed.
      */
     public EditPasswordDialog(Frame parent, User currentUser) {
         super(parent, "Edit Password", true);
@@ -72,8 +73,9 @@ public class EditPasswordDialog extends JDialog {
     }
 
     /**
-     * Handles the password editing process.
-     * Validates the original password, checks if the new passwords match, and updates the user's password if all validations pass.
+     * Handles the password editing process. This method validates the original password, checks if the new passwords match,
+     * and updates the user's password if all validations pass. It also enforces that new passwords must contain both letters
+     * and numbers and displays appropriate error messages.
      */
     private void editPassword() {
         String originalPassword = HashGenerator.generateSHA256(originalPasswordField.getText());
@@ -83,31 +85,25 @@ public class EditPasswordDialog extends JDialog {
         if (!originalPassword.equals(currentUser.getParent_password())) {
             JOptionPane.showMessageDialog(this, "Original password is incorrect.");
             refresh();
-        }
-        else if (!newPassword.equals(newPasswordAgain)) {
+        } else if (!newPassword.equals(newPasswordAgain)) {
             JOptionPane.showMessageDialog(this, "New passwords do not match.");
             refresh();
-        }
-        else if (newPassword.isEmpty() || newPasswordAgain.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "New passwords is empty");
+        } else if (newPassword.isEmpty() || newPasswordAgain.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "New passwords cannot be empty.");
             refresh();
-        } else if (!newPassword.matches("^[a-zA-Z0-9]+$") || !newPasswordAgain.matches("^[a-zA-Z0-9]+$") ||
-                !newPassword.matches(".*[a-zA-Z].*") || !newPassword.matches(".*[0-9].*") ||
-                !newPasswordAgain.matches(".*[a-zA-Z].*") || !newPasswordAgain.matches(".*[0-9].*")) {
-            JOptionPane.showMessageDialog(this, "Your new Passwords must contain and only contain both letters and numbers.");
+        } else if (!newPassword.matches("^[a-zA-Z0-9]+$") || !newPassword.matches(".*[a-zA-Z].*") || !newPassword.matches(".*[0-9].*")) {
+            JOptionPane.showMessageDialog(this, "Your new passwords must contain both letters and numbers.");
             refresh();
-        }
-        else{
-            // Update user's password
+        } else {
             currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
-
-            // Save updated user information to JSON file
             saveUserToFile();
-
             JOptionPane.showMessageDialog(this, "Password updated successfully.");
         }
     }
 
+    /**
+     * Clears all password fields in the dialog.
+     */
     public void refresh() {
         originalPasswordField.setText("");
         newPasswordField.setText("");
@@ -115,8 +111,8 @@ public class EditPasswordDialog extends JDialog {
     }
 
     /**
-     * Saves the updated user information to a JSON file.
-     * This method serializes the User object into JSON format and writes it to a file on disk.
+     * Saves the updated user information to a JSON file. This method serializes the User object
+     * into JSON format and writes it to a file, effectively persisting the changes to disk.
      */
     private void saveUserToFile() {
         String username = currentUser.getUser_name();
