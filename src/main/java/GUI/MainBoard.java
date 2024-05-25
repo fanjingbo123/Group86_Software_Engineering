@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -320,12 +322,12 @@ public class MainBoard extends JFrame {
         setTitle("User Dashboard");
         getContentPane().removeAll();
         revalidate();
-        setSize(600, 500);
+        setSize(1200, 700);
 
         JPanel panel = new JPanel(new BorderLayout());
 
         // Top Panel
-        JPanel topPanel = new JPanel(new GridLayout(3, 1));
+        JPanel topPanel = new JPanel(new GridLayout(1, 2));
         JLabel usernameLabel = new JLabel("Username: " + currentUser.getUser_name());
         JLabel current = new JLabel("Current: " + currentUser.getCurrent());
         JLabel saving = new JLabel("Saving: " + currentUser.getSaving());
@@ -334,6 +336,11 @@ public class MainBoard extends JFrame {
         JLabel goals = new JLabel("Goals: " + currentUser.getGoal_content() + " " + currentUser.getGoal_value());
         JButton logoutButton = new JButton("Logout");
         JButton editButton = new JButton("Edit");
+        JPanel ButtonPanel1 = new JPanel(new GridLayout(1, 1));
+        JPanel ButtonPanel2 = new JPanel(new GridLayout(1, 2));
+        ButtonPanel1.add(logoutButton);
+        ButtonPanel2.add(logoutButton);
+        ButtonPanel2.add(editButton);
         topPanel.add(usernameLabel);
         topPanel.add(current);
         topPanel.add(saving);
@@ -341,11 +348,19 @@ public class MainBoard extends JFrame {
         topPanel.add(totalRewards);
         topPanel.add(goals);
         topPanel.add(logoutButton);
+
         if(isParent){
             topPanel.add(editButton);
         }
-        panel.add(topPanel, BorderLayout.NORTH);
 
+        // Create an empty border for spacing
+        Border emptyBorder = BorderFactory.createEmptyBorder(10, 0, 10, 0); // 上下间距为10
+
+        // Add borders to panels for spacing
+        topPanel.setBorder(emptyBorder);
+
+        panel.add(topPanel, BorderLayout.NORTH);
+        
         // Middle Panel
         String[] columnNames = {"Task Content", "Credit Level", "Rewards", "DDL", "Finish", "Delete"};
 
@@ -354,22 +369,32 @@ public class MainBoard extends JFrame {
         ArrayList<Task> taskArrayList = getTasks(rowData);
 
         Object[][] filteredData = new Object[taskArrayList.size()][8];
-        for (int i = 0; i < taskArrayList.size(); i++){
+        for (int i = 0; i < taskArrayList.size(); i++) {
             filteredData[i][0] = taskArrayList.get(i).getTask_content();
-            filteredData[i][1] = (Object) taskArrayList.get(i).getCredit_level();
-            filteredData[i][2] = (Object) taskArrayList.get(i).getReward();
+            filteredData[i][1] = taskArrayList.get(i).getCredit_level();
+            filteredData[i][2] = taskArrayList.get(i).getReward();
             filteredData[i][3] = taskArrayList.get(i).getDDL();
             filteredData[i][4] = taskArrayList.get(i).getTask_id();
-            filteredData[i][5] = (Object) taskArrayList.get(i).isFlag();
+            filteredData[i][5] = taskArrayList.get(i).isFlag();
         }
 
         JTable taskTable = new JTable(filteredData, columnNames);
-        taskTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        taskTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        taskTable.setRowHeight(30);
+
+        // Create a renderer to center the text
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+        // Apply the renderer to each column
+        for (int i = 0; i < taskTable.getColumnCount(); i++) {
+            taskTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
 
         taskTable.getColumn("Finish").setCellRenderer(new ButtonRenderer("Finish"));
         taskTable.getColumn("Delete").setCellRenderer(new ButtonRenderer("Delete"));
 
-        // Set ButtonEditor for "Finish" column
+        // Set ButtonEditor for "Finish" and "Delete" columns
         taskTable.getColumn("Finish").setCellEditor(new ButtonEditor("Finish"));
         taskTable.getColumn("Delete").setCellEditor(new ButtonEditor("Delete"));
 
