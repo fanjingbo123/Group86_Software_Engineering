@@ -31,27 +31,67 @@ public class MainBoard extends JFrame {
     private boolean isParent = false;
 
     public MainBoard() {
-        setTitle("Login");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(300, 200);
+        // Frame initialization
+        super("Login");
+        setSize(550, 300);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2));
+        // Top panel
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JLabel titleLabel = new JLabel("Bank", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        topPanel.add(titleLabel, BorderLayout.CENTER);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameField = new JTextField();
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordField = new JPasswordField();
+        // Image panel
+        JPanel imagePanel = new JPanel();
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // 使用BoxLayout
+        imagePanel.add(Box.createVerticalGlue()); // 添加垂直填充
 
-        signInButton = new JButton("Sign In");
+        ImageIcon icon = new ImageIcon(getClass().getResource("bank.png"));
+        JLabel imageLabel = new JLabel(icon);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // 设置图片水平居中
+        imagePanel.add(imageLabel);
+
+        imagePanel.add(Box.createVerticalGlue()); // 再添加垂直填充以确保图片垂直居中
+
+        // Inputs panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+
+        JPanel usernamePanel = new JPanel();
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.X_AXIS));
+        usernamePanel.add(new JLabel("Username:"));
+        usernameField = new JTextField(15);
+        Dimension textFieldSize = new Dimension(200, 30);
+        usernameField.setPreferredSize(textFieldSize);
+        usernameField.setMaximumSize(textFieldSize);
+        usernameField.setMinimumSize(textFieldSize);
+        usernamePanel.add(usernameField);
+
+        JPanel passwordPanel = new JPanel();
+        passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.X_AXIS));
+        passwordPanel.add(new JLabel("Password:"));
+        passwordField = new JPasswordField(15);
+        passwordField.setPreferredSize(textFieldSize);
+        passwordField.setMaximumSize(textFieldSize);
+        passwordField.setMinimumSize(textFieldSize);
+        passwordPanel.add(passwordField);
+
+        // 将各个面板添加到主面板
+        inputPanel.add(Box.createVerticalStrut(20)); // 添加间隔
+        inputPanel.add(usernamePanel);
+        inputPanel.add(Box.createVerticalStrut(10)); // 添加间隔
+        inputPanel.add(passwordPanel);
+
+        // Buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         signUpButton = new JButton("Sign Up");
-
-        panel.add(usernameLabel);
-        panel.add(usernameField);
-        panel.add(passwordLabel);
-        panel.add(passwordField);
-        panel.add(signInButton);
-        panel.add(signUpButton);
+        signInButton = new JButton("Log In");
+        signUpButton.setPreferredSize(new Dimension(100, 25));
+        signInButton.setPreferredSize(new Dimension(100, 25));
 
         signUpButton.addActionListener(new ActionListener() {
             @Override
@@ -67,7 +107,20 @@ public class MainBoard extends JFrame {
             }
         });
 
-        add(panel);
+        buttonPanel.add(signUpButton);
+        buttonPanel.add(signInButton);
+        inputPanel.add(Box.createVerticalStrut(30)); // 添加间隔
+        inputPanel.add(buttonPanel);
+
+        // Main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(imagePanel, BorderLayout.WEST);
+        mainPanel.add(inputPanel, BorderLayout.CENTER);
+
+        add(mainPanel, BorderLayout.CENTER);
+
+        // Display the window
         setVisible(true);
     }
 
@@ -75,39 +128,84 @@ public class MainBoard extends JFrame {
         setTitle("Sign Up");
         getContentPane().removeAll();
         revalidate();
-        setSize(330, 250);
+        setSize(550, 300);
 
-        JPanel panel = new JPanel(new GridLayout(6, 2));
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 10, 5); // 设置组件间距
 
         JLabel usernameLabel = new JLabel("Username:");
-        JTextField signUpUsernameField = new JTextField();
+        JTextField signUpUsernameField = new JTextField(15);
         JLabel parentPasswordLabel = new JLabel("Parent Password:");
-        JPasswordField parentSignUpPasswordField = new JPasswordField();
+        JPasswordField parentSignUpPasswordField = new JPasswordField(15);
         JLabel confirmParentPassLabel = new JLabel("Confirm Parent Password:");
-        JPasswordField confirmParentPassField = new JPasswordField();
+        JPasswordField confirmParentPassField = new JPasswordField(15);
         JLabel childPasswordLabel = new JLabel("Child Password:");
-        JPasswordField childSignUpPasswordField = new JPasswordField();
+        JPasswordField childSignUpPasswordField = new JPasswordField(15);
         JLabel confirmChildPassLabel = new JLabel("Confirm Child Password:");
-        JPasswordField confirmChildPassField = new JPasswordField();
+        JPasswordField confirmChildPassField = new JPasswordField(15);
 
         JButton confirmSignUpButton = new JButton("Sign Up");
         JButton cancelSignUpButton = new JButton("Cancel");
 
-        panel.add(usernameLabel);
-        panel.add(signUpUsernameField);
-        panel.add(parentPasswordLabel);
-        panel.add(parentSignUpPasswordField);
-        panel.add(confirmParentPassLabel);
-        panel.add(confirmParentPassField);
+        // Add components to the panel using GridBagLayout
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(usernameLabel, gbc);
 
-        panel.add(childPasswordLabel);
-        panel.add(childSignUpPasswordField);
-        panel.add(confirmChildPassLabel);
-        panel.add(confirmChildPassField);
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(signUpUsernameField, gbc);
 
-        panel.add(confirmSignUpButton);
-        panel.add(cancelSignUpButton);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(parentPasswordLabel, gbc);
 
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(parentSignUpPasswordField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(confirmParentPassLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(confirmParentPassField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(childPasswordLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(childSignUpPasswordField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(confirmChildPassLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(confirmChildPassField, gbc);
+
+        // Add buttons
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.add(confirmSignUpButton);
+        buttonPanel.add(cancelSignUpButton);
+        panel.add(buttonPanel, gbc);
+
+        // Add action listeners
         cancelSignUpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -138,19 +236,17 @@ public class MainBoard extends JFrame {
                 } else if (!parent_password.equals(confirmParentPass)) {
                     JOptionPane.showMessageDialog(MainBoard.this, "Parent Passwords do not match, please try again.");
                     refresh();
-                }
-                else if (!child_password.equals(confirmChildPass)) {
+                } else if (!child_password.equals(confirmChildPass)) {
                     JOptionPane.showMessageDialog(MainBoard.this, "Child Passwords do not match, please try again.");
                     refresh();
-                }
-                else {
+                } else {
                     currentUser = new User(username, HashGenerator.generateSHA256(parent_password), HashGenerator.generateSHA256(child_password));
                     saveUserToFile();
                     homepage();
                 }
             }
 
-            public void refresh(){
+            public void refresh() {
                 signUpUsernameField.setText("");
                 parentSignUpPasswordField.setText("");
                 confirmParentPassField.setText("");
@@ -160,6 +256,8 @@ public class MainBoard extends JFrame {
         });
 
         add(panel);
+        revalidate();
+        repaint();
         setVisible(true);
     }
 
@@ -699,23 +797,65 @@ public class MainBoard extends JFrame {
     }
 
     private void addComponentsToLoginPanel() {
-        JPanel panel = new JPanel(new GridLayout(3, 2));
-        setSize(300, 200);
+        setSize(550, 300);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout(10, 10));
+        setLocationRelativeTo(null);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameField = new JTextField();
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordField = new JPasswordField();
+        // Top panel
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JLabel titleLabel = new JLabel("Bank", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        topPanel.add(titleLabel, BorderLayout.CENTER);
 
-        signInButton = new JButton("Sign In");
+        // Image panel
+        JPanel imagePanel = new JPanel();
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // 使用BoxLayout
+        imagePanel.add(Box.createVerticalGlue()); // 添加垂直填充
+
+        ImageIcon icon = new ImageIcon(getClass().getResource("bank.png"));
+        JLabel imageLabel = new JLabel(icon);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // 设置图片水平居中
+        imagePanel.add(imageLabel);
+
+        imagePanel.add(Box.createVerticalGlue()); // 再添加垂直填充以确保图片垂直居中
+
+        // Inputs panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+
+        JPanel usernamePanel = new JPanel();
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.X_AXIS));
+        usernamePanel.add(new JLabel("Username:"));
+        usernameField = new JTextField(15);
+        Dimension textFieldSize = new Dimension(200, 30);
+        usernameField.setPreferredSize(textFieldSize);
+        usernameField.setMaximumSize(textFieldSize);
+        usernameField.setMinimumSize(textFieldSize);
+        usernamePanel.add(usernameField);
+
+        JPanel passwordPanel = new JPanel();
+        passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.X_AXIS));
+        passwordPanel.add(new JLabel("Password:"));
+        passwordField = new JPasswordField(15);
+        passwordField.setPreferredSize(textFieldSize);
+        passwordField.setMaximumSize(textFieldSize);
+        passwordField.setMinimumSize(textFieldSize);
+        passwordPanel.add(passwordField);
+
+        // 将各个面板添加到主面板
+        inputPanel.add(Box.createVerticalStrut(20)); // 添加间隔
+        inputPanel.add(usernamePanel);
+        inputPanel.add(Box.createVerticalStrut(10)); // 添加间隔
+        inputPanel.add(passwordPanel);
+
+        // Buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         signUpButton = new JButton("Sign Up");
-
-        panel.add(usernameLabel);
-        panel.add(usernameField);
-        panel.add(passwordLabel);
-        panel.add(passwordField);
-        panel.add(signInButton);
-        panel.add(signUpButton);
+        signInButton = new JButton("Log In");
+        signUpButton.setPreferredSize(new Dimension(100, 25));
+        signInButton.setPreferredSize(new Dimension(100, 25));
 
         signUpButton.addActionListener(new ActionListener() {
             @Override
@@ -731,7 +871,18 @@ public class MainBoard extends JFrame {
             }
         });
 
-        add(panel);
+        buttonPanel.add(signUpButton);
+        buttonPanel.add(signInButton);
+        inputPanel.add(Box.createVerticalStrut(30)); // 添加间隔
+        inputPanel.add(buttonPanel);
+
+        // Main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(imagePanel, BorderLayout.WEST);
+        mainPanel.add(inputPanel, BorderLayout.CENTER);
+
+        add(mainPanel, BorderLayout.CENTER);
     }
 
     public static void main(String[] args) {
