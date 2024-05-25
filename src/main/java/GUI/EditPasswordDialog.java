@@ -82,16 +82,23 @@ public class EditPasswordDialog extends JDialog {
 
         if (!originalPassword.equals(currentUser.getParent_password())) {
             JOptionPane.showMessageDialog(this, "Original password is incorrect.");
-            return;
+            refresh();
         }
-
-        if (!newPassword.equals(newPasswordAgain)) {
+        else if (!newPassword.equals(newPasswordAgain)) {
             JOptionPane.showMessageDialog(this, "New passwords do not match.");
-            return;
+            refresh();
+        }
+        else if (newPassword.isEmpty() || newPasswordAgain.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "New passwords is empty");
+            refresh();
         }
 
+        // Update user's password
         currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
+
+        // Save updated user information to JSON file
         saveUserToFile();
+
         JOptionPane.showMessageDialog(this, "Password updated successfully.");
     }
 
