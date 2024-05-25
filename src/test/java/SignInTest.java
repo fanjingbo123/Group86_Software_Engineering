@@ -14,6 +14,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import utils.HashGenerator;
 
+/**
+ * Tests for the SignIn functionality in the MainBoard class.
+ * These tests verify the correct behavior of the sign-in process under various scenarios including successful login as a parent,
+ * successful login as a child, failure due to incorrect password, and failure due to non-existent user.
+ */
 public class SignInTest {
     private MainBoard mainBoard;
     private JTextField usernameField;
@@ -23,38 +28,46 @@ public class SignInTest {
     private String parentPassword = "parentPassword";
     private String childPassword = "childPassword";
 
+    /**
+     * Sets up the testing environment for each test.
+     * Initializes a MainBoard instance, simulates the environment by setting up user data files,
+     * and prepares user data in JSON format to mimic database records.
+     *
+     * @throws Exception if file operations or setting up the environment fails.
+     */
     @BeforeEach
     public void setUp() throws Exception {
-        // 创建 MainBoard 对象
         mainBoard = new MainBoard();
-
-        // 初始化必要的字段
         usernameField = new JTextField();
         passwordField = new JPasswordField();
         mainBoard.usernameField = usernameField;
         mainBoard.passwordField = passwordField;
 
-        // 创建测试所需的目录和文件
         userDataDir = new File("src/main/java/UserData/" + username);
         userDataDir.mkdirs();
         File userFile = new File(userDataDir, username + ".json");
 
-        // 创建用户数据文件
         JSONObject userData = new JSONObject();
         userData.put("parent_password", HashGenerator.generateSHA256(parentPassword));
         userData.put("child_password", HashGenerator.generateSHA256(childPassword));
-        userData.put("user_name", username); // 添加用户名到 JSON 数据
+        userData.put("user_name", username);
         try (FileWriter fileWriter = new FileWriter(userFile)) {
             fileWriter.write(userData.toJSONString());
         }
     }
 
+    /**
+     * Cleans up the testing environment by deleting the user data directory and its contents after each test.
+     */
     @AfterEach
     public void tearDown() {
-        // 删除测试文件和目录
         deleteDirectory(new File("src/main/java/UserData/" + username));
     }
 
+    /**
+     * Helper method to recursively delete directories and files.
+     * @param file The directory or file to delete.
+     */
     private void deleteDirectory(File file) {
         File[] contents = file.listFiles();
         if (contents != null) {
@@ -65,62 +78,58 @@ public class SignInTest {
         file.delete();
     }
 
+    /**
+     * Tests successful sign-in as a parent.
+     * Verifies that the user is correctly logged in with parent privileges and that the user's details are correctly set.
+     */
     @Test
     public void testSignInSuccessAsParent() {
-        // 设置用户名和正确的父密码
         usernameField.setText(username);
         passwordField.setText(parentPassword);
-
-        // 调用 signIn 方法
         mainBoard.signIn();
 
-        // 验证 currentUser 不为 null
         assertNotNull(mainBoard.currentUser, "Current user should not be null");
         assertEquals(username, mainBoard.currentUser.getUser_name(), "User name should be 'testUser'");
-        // 验证用户成功登录并且是父母身份
-        assertTrue(mainBoard.isParent);
+        assertTrue(mainBoard.isParent, "User should be logged in as a parent");
     }
 
+    /**
+     * Tests successful sign-in as a child.
+     * Verifies that the user is correctly logged in with child privileges.
+     */
     @Test
     public void testSignInSuccessAsChild() {
-        // 设置用户名和正确的子密码
         usernameField.setText(username);
         passwordField.setText(childPassword);
-
-        // 调用 signIn 方法
         mainBoard.signIn();
 
-        // 验证 currentUser 不为 null
         assertNotNull(mainBoard.currentUser, "Current user should not be null");
-
-
-        // 验证用户成功登录并且是孩子身份
-        assertFalse(mainBoard.isParent);
+        assertFalse(mainBoard.isParent, "User should be logged in as a child");
     }
 
+    /**
+     * Tests sign-in failure due to incorrect password.
+     * Verifies that the user is not logged in when an incorrect password is used.
+     */
     @Test
     public void testSignInFailureInvalidPassword() {
-        // 设置用户名和错误的密码
         usernameField.setText(username);
         passwordField.setText("wrongPassword");
-
-        // 调用 signIn 方法
         mainBoard.signIn();
 
-        // 验证 currentUser 为 null
         assertNull(mainBoard.currentUser, "Current user should be null");
     }
 
+    /**
+     * Tests sign-in failure due to a non-existent username.
+     * Verifies that the user is not logged in when a username that does not exist is used.
+     */
     @Test
     public void testSignInFailureUserNotFound() {
-        // 设置不存在的用户名
         usernameField.setText("nonExistentUser");
         passwordField.setText("somePassword");
-
-        // 调用 signIn 方法
         mainBoard.signIn();
 
-        // 验证 currentUser 为 null
         assertNull(mainBoard.currentUser, "Current user should be null");
     }
 }
