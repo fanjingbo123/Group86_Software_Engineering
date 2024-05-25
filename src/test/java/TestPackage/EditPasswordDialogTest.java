@@ -1,3 +1,5 @@
+package TestPackage;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import GUI.EditPasswordDialog;
