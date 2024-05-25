@@ -91,7 +91,13 @@ public class EditPasswordDialog extends JDialog {
         else if (newPassword.isEmpty() || newPasswordAgain.isEmpty()) {
             JOptionPane.showMessageDialog(this, "New passwords is empty");
             refresh();
-        }else{
+        } else if (!newPassword.matches("^[a-zA-Z0-9]+$") || !newPasswordAgain.matches("^[a-zA-Z0-9]+$") ||
+                !newPassword.matches(".*[a-zA-Z].*") || !newPassword.matches(".*[0-9].*") ||
+                !newPasswordAgain.matches(".*[a-zA-Z].*") || !newPasswordAgain.matches(".*[0-9].*")) {
+            JOptionPane.showMessageDialog(this, "Your new Passwords must contain and only contain both letters and numbers.");
+            refresh();
+        }
+        else{
             // Update user's password
             currentUser.setParent_password(HashGenerator.generateSHA256(newPassword));
 
