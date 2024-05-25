@@ -17,6 +17,8 @@ public class EditPasswordDialog extends JDialog {
     private JPasswordField newPasswordField;
     private JPasswordField newPasswordAgainField;
     private User currentUser;
+    public JButton editButton = new JButton("Edit");
+    public JButton backButton = new JButton("Back");
 
     public EditPasswordDialog(Frame parent, User currentUser) {
         super(parent, "Edit Password", true);
@@ -34,8 +36,8 @@ public class EditPasswordDialog extends JDialog {
         JLabel newPasswordAgainLabel = new JLabel("New Password Again:");
         newPasswordAgainField = new JPasswordField();
 
-        JButton editButton = new JButton("Edit");
-        JButton backButton = new JButton("Back");
+         editButton = new JButton("Edit");
+         backButton = new JButton("Back");
 
         panel.add(originalPasswordLabel);
         panel.add(originalPasswordField);
