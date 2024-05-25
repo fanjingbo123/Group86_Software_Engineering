@@ -15,19 +15,29 @@ import utils.HashGenerator;
 import utils.User;
 import GUI.WithdrawDialog;
 
+/**
+ * Tests for the WithdrawDialog class.
+ * These tests ensure that the withdrawal functionality works correctly under various conditions,
+ * particularly focusing on handling invalid and zero withdrawal amounts.
+ */
 public class WithdrawDialogTest {
     private WithdrawDialog withdrawDialog;
     private User testUser;
     private String transactionFilePath;
 
+    /**
+     * Sets up the environment for each test.
+     * Initializes a test user and a WithdrawDialog instance before each test.
+     * It sets initial conditions such as the user's account balances and creates necessary files and directories.
+     *
+     * @throws Exception if any file operations or setting up the environment fail.
+     */
     @BeforeEach
     public void setUp() throws Exception {
-        // 创建一个测试用户对象
         testUser = new User("testUser", HashGenerator.generateSHA256("parentPassword"), "childPassword");
-        testUser.setCurrent(500.0);  // 初始化current账户余额
-        testUser.setSaving(100.0);   // 初始化saving账户余额
+        testUser.setCurrent(500.0);  // Set initial balance for the current account.
+        testUser.setSaving(100.0);   // Set initial balance for the savings account.
 
-        // 创建测试所需的目录和文件
         String userDir = "src/main/java/UserData/testUser";
         transactionFilePath = userDir + "/testUser_transaction.json";
         new File(userDir).mkdirs();
@@ -35,65 +45,73 @@ public class WithdrawDialogTest {
             Files.createFile(Paths.get(transactionFilePath));
         }
 
-        // 初始化 WithdrawDialog 对象，不传递 MainBoard 对象
         withdrawDialog = new WithdrawDialog(null, testUser);
-
-        // 使用反射设置取款金额字段的初始值
         setField(withdrawDialog, "amountField", "200");
     }
 
-
+    /**
+     * Tests the withdrawal functionality with an invalid (negative) withdrawal amount.
+     * Asserts that the balances remain unchanged after an invalid withdrawal attempt.
+     *
+     * @throws Exception if reflection or other operations fail.
+     */
     @Test
     public void testWithdrawFailureInvalidAmount() throws Exception {
-        // 设置无效的取款金额
         setField(withdrawDialog, "amountField", "-100");
-
-        // 获取 withdrawButton 并模拟点击 "Withdraw" 按钮
         JButton withdrawButton = (JButton) getField(withdrawDialog, "withdrawButton");
         clickButton(withdrawButton);
 
-        // 验证取款是否未更新
         assertEquals(500.0, testUser.getCurrent(), "Current account should not be updated");
         assertEquals(100.0, testUser.getSaving(), "Saving account should not be updated");
     }
 
-
+    /**
+     * Tests the withdrawal functionality with a zero withdrawal amount.
+     * Asserts that the balances remain unchanged when a zero withdrawal is attempted.
+     *
+     * @throws Exception if reflection or other operations fail.
+     */
     @Test
     public void testWithdrawFailureZeroAmount() throws Exception {
-        // 选择 saving 账户
         JRadioButton savingAccountButton = (JRadioButton) getField(withdrawDialog, "savingAccountButton");
         savingAccountButton.setSelected(true);
 
-        // 设置取款金额为零
         setField(withdrawDialog, "amountField", "0");
-
-        // 获取 withdrawButton 并模拟点击 "Withdraw" 按钮
         JButton withdrawButton = (JButton) getField(withdrawDialog, "withdrawButton");
         clickButton(withdrawButton);
 
-        // 验证取款是否未更新
         assertEquals(500.0, testUser.getCurrent(), "Current account should not be updated");
         assertEquals(100.0, testUser.getSaving(), "Saving account should not be updated");
     }
 
+    /**
+     * Tests the withdrawal functionality with a non-numeric withdrawal amount.
+     * Asserts that the balances remain unchanged when a non-numeric withdrawal is attempted.
+     *
+     * @throws Exception if reflection or other operations fail.
+     */
     @Test
     public void testWithdrawFailureNonNumericAmount() throws Exception {
-        // 选择 current 账户
         JRadioButton currentAccountButton = (JRadioButton) getField(withdrawDialog, "currentAccountButton");
         currentAccountButton.setSelected(true);
 
-        // 设置取款金额为非数字
         setField(withdrawDialog, "amountField", "abc");
-
-        // 获取 withdrawButton 并模拟点击 "Withdraw" 按钮
         JButton withdrawButton = (JButton) getField(withdrawDialog, "withdrawButton");
         clickButton(withdrawButton);
 
-        // 验证取款是否未更新
         assertEquals(500.0, testUser.getCurrent(), "Current account should not be updated");
         assertEquals(100.0, testUser.getSaving(), "Saving account should not be updated");
     }
 
+    /**
+     * Uses reflection to set a field on an object.
+     * This method is used to set values on private fields within the test target object.
+     *
+     * @param target The object on which to set the field.
+     * @param fieldName The name of the field to set.
+     * @param value The value to set.
+     * @throws Exception if the field is not accessible or does not exist.
+     */
     private void setField(Object target, String fieldName, String value) throws Exception {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
@@ -104,16 +122,30 @@ public class WithdrawDialogTest {
         }
     }
 
+    /**
+     * Uses reflection to retrieve a field value from an object.
+     * This method is critical for accessing private fields of the test target for verification purposes.
+     *
+     * @param target The object from which to retrieve the field.
+     * @param fieldName The name of the field to retrieve.
+     * @return The value of the field.
+     * @throws Exception if the field is not accessible or does not exist.
+     */
     private Object getField(Object target, String fieldName) throws Exception {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(target);
     }
 
+    /**
+     * Simulates a button click by invoking all action listeners associated with the button.
+     * This method is used to test button functionality without a GUI.
+     *
+     * @param button The button to be clicked.
+     */
     private void clickButton(JButton button) {
         for (ActionListener listener : button.getActionListeners()) {
             listener.actionPerformed(new ActionEvent(button, ActionEvent.ACTION_PERFORMED, null));
         }
     }
 }
-
