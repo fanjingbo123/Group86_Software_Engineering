@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -26,13 +25,13 @@ import java.util.Optional;
  * registration, task management, and financial transactions.
  */
 public class MainBoard extends JFrame {
-    private JTextField usernameField;
-    private JPasswordField passwordField;
+    public JTextField usernameField;
+    public JPasswordField passwordField;
     private JButton signInButton;
     private JButton signUpButton;
 
-    private User currentUser;
-    private boolean isParent = false;
+    public User currentUser;
+    public boolean isParent = false;
 
     /**
      * Constructs the main login window of the Virtual Bank application.
@@ -47,25 +46,25 @@ public class MainBoard extends JFrame {
         setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
         setResizable(false);
-
-        // Top panel with the bank title
+        // Top panel
         JPanel topPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Bank", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         topPanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Image panel for displaying the bank icon
+        // Image panel
         JPanel imagePanel = new JPanel();
-        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
-        imagePanel.add(Box.createVerticalGlue());
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // Use BoxLayout
+        imagePanel.add(Box.createVerticalGlue()); // Add vertical filler
 
         ImageIcon icon = new ImageIcon(getClass().getResource("/image/bank.png"));
         JLabel imageLabel = new JLabel(icon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Set image horizontally centered
         imagePanel.add(imageLabel);
-        imagePanel.add(Box.createVerticalGlue());
 
-        // Input panel for entering username and password
+        imagePanel.add(Box.createVerticalGlue()); // Add vertical filler to ensure image is vertically centered
+
+        // Inputs panel
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
@@ -73,7 +72,7 @@ public class MainBoard extends JFrame {
         JPanel usernamePanel = new JPanel();
         usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.X_AXIS));
         usernamePanel.add(new JLabel("Username:"));
-        JTextField usernameField = new JTextField(15);
+        usernameField = new JTextField(15);
         Dimension textFieldSize = new Dimension(200, 30);
         usernameField.setPreferredSize(textFieldSize);
         usernameField.setMaximumSize(textFieldSize);
@@ -83,29 +82,29 @@ public class MainBoard extends JFrame {
         JPanel passwordPanel = new JPanel();
         passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.X_AXIS));
         passwordPanel.add(new JLabel("Password:"));
-        JPasswordField passwordField = new JPasswordField(15);
+        passwordField = new JPasswordField(15);
         passwordField.setPreferredSize(textFieldSize);
         passwordField.setMaximumSize(textFieldSize);
         passwordField.setMinimumSize(textFieldSize);
         passwordPanel.add(passwordField);
 
-        inputPanel.add(Box.createVerticalStrut(20));
+        // Add panels to the main panel
+        inputPanel.add(Box.createVerticalStrut(20)); // Add gap
         inputPanel.add(usernamePanel);
-        inputPanel.add(Box.createVerticalStrut(10));
+        inputPanel.add(Box.createVerticalStrut(10)); // Add gap
         inputPanel.add(passwordPanel);
 
-        // Button panel with sign up and log in buttons
+        // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-        JButton signUpButton = new JButton("Sign Up");
-        JButton signInButton = new JButton("Log In");
+        signUpButton = new JButton("Sign Up");
+        signInButton = new JButton("Log In");
         signUpButton.setPreferredSize(new Dimension(100, 25));
         signInButton.setPreferredSize(new Dimension(100, 25));
 
-        // Register the sign-up button to open the sign-up panel on click
         signUpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                signUpPanel(); // Assuming signUpPanel is a method that handles the sign up logic
+                signUpPanel();
             }
         });
 
@@ -118,7 +117,7 @@ public class MainBoard extends JFrame {
 
         buttonPanel.add(signUpButton);
         buttonPanel.add(signInButton);
-        inputPanel.add(Box.createVerticalStrut(30)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(30)); // Add gap
         inputPanel.add(buttonPanel);
 
         // Main panel
@@ -144,7 +143,7 @@ public class MainBoard extends JFrame {
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 10, 5); // 设置组件间距
+        gbc.insets = new Insets(5, 5, 10, 5); // Set component spacing
 
         JLabel usernameLabel = new JLabel("Username:");
         JTextField signUpUsernameField = new JTextField(15);
@@ -291,14 +290,14 @@ public class MainBoard extends JFrame {
         String username = currentUser.getUser_name();
         String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
 
-        // 创建以 username 命名的包目录
+        // Create directory named by username
         String packagePath = "src/main/java/UserData/" + username;
         File packageDirectory = new File(packagePath);
         if (!packageDirectory.exists()) {
-            packageDirectory.mkdirs(); // 创建目录及其父目录
+            packageDirectory.mkdirs(); // Create directory and its parent directories
         }
 
-        // 创建以 username 命名的 JSON 文件
+        // Create JSON file named by username
         String jsonFilePath = packagePath + "/" + username + ".json";
         File jsonFile = new File(jsonFilePath);
         File transactionFile = new File("src/main/java/UserData/" + username + "/" + username + "_transaction.json");
@@ -370,8 +369,7 @@ public class MainBoard extends JFrame {
         taskTable.getColumn("Finish").setCellRenderer(new ButtonRenderer("Finish"));
         taskTable.getColumn("Delete").setCellRenderer(new ButtonRenderer("Delete"));
 
-        // 为"Finish"列设置ButtonEditor
-        // 为"Finish"列设置ButtonEditor
+        // Set ButtonEditor for "Finish" column
         taskTable.getColumn("Finish").setCellEditor(new ButtonEditor("Finish"));
         taskTable.getColumn("Delete").setCellEditor(new ButtonEditor("Delete"));
 
@@ -382,15 +380,15 @@ public class MainBoard extends JFrame {
                 String task_id = (String) filteredData[row][4];
 
                 if(currentUser.getCredit_level() >= (int)filteredData[row][1]){
-                    double reward = updateTask(task_id);  // 假设 updateTask 标记任务完成并返回奖励
+                    double reward = updateTask(task_id);  // Assuming updateTask marks the task complete and returns the reward
 
-                    // 更新用户的总奖励和当前余额
+                    // Update user's total rewards and current balance
                     currentUser.setTotal_reward(currentUser.getTotal_reward() + reward);
                     currentUser.setCurrent(currentUser.getCurrent() + reward);
 
                     int newCreditLevel = currentUser.getCredit_level() + (int)(currentUser.getTotal_reward() / 50) - (int)((currentUser.getTotal_reward() - reward) / 50);
                     if (newCreditLevel != currentUser.getCredit_level()) {
-                        currentUser.setCredit_level(newCreditLevel);  // 更新 credit_level
+                        currentUser.setCredit_level(newCreditLevel);  // Update credit_level
                         JOptionPane.showMessageDialog(null, "Congratulations! Your credit level has been increased to " + newCreditLevel);
                     }
                     try {
@@ -399,9 +397,9 @@ public class MainBoard extends JFrame {
                         throw new RuntimeException(ex);
                     }
 
-                    // 更新用户数据文件或数据库条目
+                    // Update user data file or database entry
                     updateUserFile();
-                    // 刷新主界面以显示更新的数据
+                    // Refresh the homepage to show updated data
                     homepage();
                 }else {
                     JOptionPane.showMessageDialog(null, "Your credit level is not high enough to complete this task.", "Task Completion Denied", JOptionPane.ERROR_MESSAGE);
@@ -423,7 +421,6 @@ public class MainBoard extends JFrame {
         for (String column: columnNames){
             taskTable.getColumn(column).setMinWidth(90);
         }
-
 
         JScrollPane scrollPane = new JScrollPane(taskTable);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -521,41 +518,44 @@ public class MainBoard extends JFrame {
      * and the type of account affected by the transaction.
      */
     public void transactionRecordPage() {
-        setTitle("Transaction Record"); // Set the title of the window
-        getContentPane().removeAll(); // Clear previous content
+        setTitle("Transaction Record");
+        getContentPane().removeAll();
         revalidate();
-        setSize(600, 400); // Set the size of the window
+        setSize(600, 400); // Set page size
 
-        // Main panel that holds all sub-panels
+        // Main layout panel
         JPanel panel = new JPanel(new BorderLayout());
 
-        // 顶部面板，用于显示标题和账户信息
+        // Top panel for displaying title and account information
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 
-        // Top panel that displays the title and account balances
+        // Title label
         JLabel titleLabel = new JLabel("Transaction Record", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         topPanel.add(titleLabel);
 
-        // Labels displaying current and saving account balances
+        // Account information labels
         JLabel current = new JLabel("Current: " + currentUser.getCurrent(), SwingConstants.CENTER);
         JLabel saving = new JLabel("Saving: " + currentUser.getSaving(), SwingConstants.CENTER);
         topPanel.add(current);
         topPanel.add(saving);
 
-        panel.add(topPanel, BorderLayout.NORTH); // Add the top panel to the north of the main panel
+        // Add top panel to the main panel's north region
+        panel.add(topPanel, BorderLayout.NORTH);
 
-        // Define column names for the transaction table
+        // Create column names for the table
         String[] columnNames = {"Time", "Expense/Income", "Account Type"};
 
-        // Load transaction data and create a table
+        // Read transaction data
         Object[][] data = loadTransactionData();
-        JTable table = new JTable(data, columnNames);
-        JScrollPane scrollPane = new JScrollPane(table); // Make the table scrollable
-        panel.add(scrollPane, BorderLayout.CENTER); // Add the scroll pane to the center of the main panel
 
-        // 底部的按钮
+        // Create the table
+        JTable table = new JTable(data, columnNames);
+        JScrollPane scrollPane = new JScrollPane(table);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // Bottom buttons
         JPanel bottomPanel = new JPanel();
         JButton backButton = new JButton("Back");
         JButton withDrawButton = new JButton("Withdraw");
@@ -570,7 +570,7 @@ public class MainBoard extends JFrame {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                homepage(); // 返回主页面
+                homepage();
             }
         });
         withDrawButton.addActionListener(new ActionListener() {
@@ -588,19 +588,19 @@ public class MainBoard extends JFrame {
             }
         });
 
-        // 把底部面板添加到主面板的南部
+
         panel.add(bottomPanel, BorderLayout.SOUTH);
 
-        // 把主面板添加到frame
+
         add(panel);
-        setVisible(true); // 显示页面
+        setVisible(true);
     }
 
     /**
      * Refreshes the transaction record page to show updated information.
      */
     public void refreshTransactionRecordPage() {
-        transactionRecordPage();  // 假设这是重载交易记录的现有方法
+        transactionRecordPage();
     }
 
     /**
@@ -645,7 +645,7 @@ public class MainBoard extends JFrame {
         }
 
         if (transactions == null) {
-            transactions = new JSONArray(); // 确保transactions不为null
+            transactions = new JSONArray(); // Ensure transactions is not null
         }
 
         transactions.add(transactionDetails);
@@ -666,16 +666,16 @@ public class MainBoard extends JFrame {
         File transactionFile = new File(transactionFileName);
 
         if (!transactionFile.exists()) {
-            return new Object[0][0]; // 没有交易记录，返回空数组
+            return new Object[0][0]; // Return empty array if no transactions
         }
 
         try {
-            // 读取文件内容
+
             String jsonText = new String(Files.readAllBytes(transactionFile.toPath()), StandardCharsets.UTF_8);
             JSONArray transactions = JSON.parseArray(jsonText);
 
             if (transactions == null) {
-                transactions = new JSONArray(); // 确保transactions不为null
+                transactions = new JSONArray(); // Ensure transactions is not null
             }
 
             Object[][] data = new Object[transactions.size()][3];
@@ -700,14 +700,14 @@ public class MainBoard extends JFrame {
         String username = currentUser.getUser_name();
         String jsonString = JSON.toJSONString(currentUser, String.valueOf(SerializerFeature.PrettyFormat));
 
-        // 创建以 username 命名的包目录
+        // Create directory named by username
         String packagePath = "src/main/java/UserData/" + username;
         File packageDirectory = new File(packagePath);
         if (!packageDirectory.exists()) {
             packageDirectory.mkdirs();
         }
 
-        // 创建以 username 命名的 JSON 文件
+        // Create JSON file named by username
         String jsonFilePath = packagePath + "/" + username + ".json";
         File jsonFile = new File(jsonFilePath);
         try (FileWriter file = new FileWriter(jsonFile)) {
@@ -732,7 +732,7 @@ public class MainBoard extends JFrame {
 
         Object[][] taskData = loadTasks();
 
-        // 遍历任务数组，查找对应的任务对象
+        // Iterate task array to find the targeted task object
         for (int i = 0; i < taskData.length; i += 1) {
             String id = (String) taskData[i][6];
             if (taskId.equals(id)) {
@@ -740,7 +740,7 @@ public class MainBoard extends JFrame {
 
                 JSONArray taskArray = new JSONArray();
                 for (Object[] taskDatum : taskData) {
-                    // 创建新任务的 JSON 对象
+                    // Create new JSON object for new task
                     com.alibaba.fastjson.JSONObject newTaskJson = new com.alibaba.fastjson.JSONObject();
                     newTaskJson.put("task_id", taskDatum[6]);
                     newTaskJson.put("task_content", taskDatum[0]);
@@ -749,10 +749,10 @@ public class MainBoard extends JFrame {
                     newTaskJson.put("DDL", taskDatum[3]);
                     newTaskJson.put("flag", taskDatum[7]);
 
-                    // 将新任务添加到 JSON 数组
+
                     taskArray.add(newTaskJson);
                 }
-                // 将更新后的 JSON 数组写回任务文件
+                // Write updated JSON array back to task file
                 try (FileWriter fileWriter = new FileWriter(taskFileName)) {
                     fileWriter.write(taskArray.toJSONString());
                 } catch (IOException e) {
@@ -763,7 +763,7 @@ public class MainBoard extends JFrame {
             }
         }
 
-        // 如果未找到对应的任务，则返回 null
+
         return 0;
     }
 
@@ -778,7 +778,7 @@ public class MainBoard extends JFrame {
         String taskFilePath = "src/main/java/UserData/" + username + "/" + username + "_task.json";
 
         try {
-            //判断有没有json 文件
+            // Test whether file is null
             File taskFile = new File(taskFilePath);
             if (!taskFile.exists()) {
                 return new Object[0][0];
@@ -792,7 +792,7 @@ public class MainBoard extends JFrame {
                     taskJsonString.append((char) character);
                 }
             }
-            //如果 json 是空的
+            // If JSON is null
             com.alibaba.fastjson2.JSONArray taskArray;
             if (taskJsonString.length() == 0) {
                 return new Object[0][0];
@@ -843,7 +843,7 @@ public class MainBoard extends JFrame {
      * If authentication succeeds, it sets the current user and transitions to the user homepage.
      * Otherwise, it displays an error message.
      */
-    private void signIn() {
+    public void signIn() {
         String username = usernameField.getText();
         String password = HashGenerator.generateSHA256(new String(passwordField.getPassword()));
 
@@ -896,15 +896,15 @@ public class MainBoard extends JFrame {
 
         // Image panel
         JPanel imagePanel = new JPanel();
-        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS)); // 使用BoxLayout
-        imagePanel.add(Box.createVerticalGlue()); // 添加垂直填充
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
+        imagePanel.add(Box.createVerticalGlue());
 
         ImageIcon icon = new ImageIcon(getClass().getResource("/image/bank.png"));
         JLabel imageLabel = new JLabel(icon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // 设置图片水平居中
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         imagePanel.add(imageLabel);
 
-        imagePanel.add(Box.createVerticalGlue()); // 再添加垂直填充以确保图片垂直居中
+        imagePanel.add(Box.createVerticalGlue());
 
         // Inputs panel
         JPanel inputPanel = new JPanel();
@@ -930,10 +930,10 @@ public class MainBoard extends JFrame {
         passwordField.setMinimumSize(textFieldSize);
         passwordPanel.add(passwordField);
 
-        // 将各个面板添加到主面板
-        inputPanel.add(Box.createVerticalStrut(20)); // 添加间隔
+        // Add panels to the main board
+        inputPanel.add(Box.createVerticalStrut(20)); // Add gaps
         inputPanel.add(usernamePanel);
-        inputPanel.add(Box.createVerticalStrut(10)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(10)); // Add gaps
         inputPanel.add(passwordPanel);
 
         // Buttons panel
@@ -959,7 +959,7 @@ public class MainBoard extends JFrame {
 
         buttonPanel.add(signUpButton);
         buttonPanel.add(signInButton);
-        inputPanel.add(Box.createVerticalStrut(30)); // 添加间隔
+        inputPanel.add(Box.createVerticalStrut(30)); // Add gaps
         inputPanel.add(buttonPanel);
 
         // Main panel
