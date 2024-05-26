@@ -421,7 +421,7 @@ public class MainBoard extends JFrame {
                     currentUser.setCurrent(currentUser.getCurrent() + reward);
 
                     int newCreditLevel = currentUser.getCredit_level() + (int)(currentUser.getTotal_reward() / 50) - (int)((currentUser.getTotal_reward() - reward) / 50);
-                    if (newCreditLevel != currentUser.getCredit_level()) {
+                    if (newCreditLevel != currentUser.getCredit_level() && newCreditLevel <= 5) {
                         currentUser.setCredit_level(newCreditLevel);  // Update credit_level
                         JOptionPane.showMessageDialog(null, "Congratulations! Your credit level has been increased to " + newCreditLevel);
                     }

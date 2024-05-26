@@ -135,7 +135,8 @@ public class User {
      * @param credit_level the new credit level
      */
     public void setCredit_level(int credit_level) {
-        this.credit_level = credit_level;
+        if (credit_level >= 5) {this.credit_level = 5;}
+        else {this.credit_level = credit_level;}
     }
 
     /**
