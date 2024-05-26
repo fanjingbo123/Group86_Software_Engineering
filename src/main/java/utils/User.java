@@ -10,7 +10,7 @@ public class User {
     private String child_password; // The password for child access controls
     private double saving; // The amount of money in the user's saving account
     private double current; // The amount of money in the user's current account
-    private int credit_level; // A numeric representation of the user's creditworthiness or achievements
+    private int credit_level = 1; // A numeric representation of the user's creditworthiness or achievements
     private double total_reward; // The total monetary rewards accumulated by the user
     private String goal_content; // A description of the user's financial goal
     private double goal_value; // The numerical value goal for savings or spending
