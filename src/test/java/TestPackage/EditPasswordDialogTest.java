@@ -37,7 +37,7 @@ public class EditPasswordDialogTest {
      */
     @BeforeEach
     public void setUp() throws Exception {
-        testUser = new User("testUser", HashGenerator.generateSHA256("originalPassword"), "childPassword");
+        testUser = new User("testUser", HashGenerator.generateSHA256("123originalPassword"), "123childPassword");
 
         String userDir = "src/main/java/UserData/testUser";
         new File(userDir).mkdirs();
@@ -53,9 +53,9 @@ public class EditPasswordDialogTest {
         }
 
         editPasswordDialog = new EditPasswordDialog(null, testUser);
-        setField(editPasswordDialog, "originalPasswordField", "originalPassword");
-        setField(editPasswordDialog, "newPasswordField", "newPassword");
-        setField(editPasswordDialog, "newPasswordAgainField", "newPassword");
+        setField(editPasswordDialog, "originalPasswordField", "123originalPassword");
+        setField(editPasswordDialog, "newPasswordField", "123newPassword");
+        setField(editPasswordDialog, "newPasswordAgainField", "123newPassword");
     }
 
     /**
@@ -77,7 +77,7 @@ public class EditPasswordDialogTest {
         JButton editButton = (JButton) getField(editPasswordDialog, "editButton");
         clickButton(editButton);
 
-        assertEquals(HashGenerator.generateSHA256("newPassword"), testUser.getParent_password(), "Password should be updated to newPassword");
+        assertEquals(HashGenerator.generateSHA256("123newPassword"), testUser.getParent_password(), "Password should be updated to newPassword");
         assertFalse(editPasswordDialog.isVisible(), "Dialog should be closed after editing password");
     }
 
@@ -87,12 +87,12 @@ public class EditPasswordDialogTest {
      */
     @Test
     public void testEditPasswordFailureIncorrectOriginalPassword() throws Exception {
-        setField(editPasswordDialog, "originalPasswordField", "wrongPassword");
+        setField(editPasswordDialog, "originalPasswordField", "123wrongPassword");
 
         JButton editButton = (JButton) getField(editPasswordDialog, "editButton");
         clickButton(editButton);
 
-        assertEquals(HashGenerator.generateSHA256("originalPassword"), testUser.getParent_password(), "Password should not be updated with incorrect original password");
+        assertEquals(HashGenerator.generateSHA256("123originalPassword"), testUser.getParent_password(), "Password should not be updated with incorrect original password");
     }
 
     /**
@@ -101,13 +101,13 @@ public class EditPasswordDialogTest {
      */
     @Test
     public void testEditPasswordFailureNewPasswordsDoNotMatch() throws Exception {
-        setField(editPasswordDialog, "newPasswordField", "newPassword");
-        setField(editPasswordDialog, "newPasswordAgainField", "differentPassword");
+        setField(editPasswordDialog, "newPasswordField", "123newPassword");
+        setField(editPasswordDialog, "newPasswordAgainField", "123differentPassword");
 
         JButton editButton = (JButton) getField(editPasswordDialog, "editButton");
         clickButton(editButton);
 
-        assertEquals(HashGenerator.generateSHA256("originalPassword"), testUser.getParent_password(), "Password should not be updated when new passwords do not match");
+        assertEquals(HashGenerator.generateSHA256("123originalPassword"), testUser.getParent_password(), "Password should not be updated when new passwords do not match");
     }
 
     /**
