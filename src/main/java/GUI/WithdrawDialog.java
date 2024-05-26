@@ -125,8 +125,10 @@ public class WithdrawDialog extends JDialog {
 
         if (accountType.equals("current")) {
             currentUser.setCurrent(currentUser.getCurrent() - amount);
-        } else {
+        } else if (accountType.equals("saving")) {
             currentUser.setSaving(currentUser.getSaving() - amount);
+            currentUser.setCurrent(currentUser.getCurrent() + amount);
+            recordTransaction(amount, false, "current", null);
         }
 
         recordTransaction(amount, true, accountType, null);
