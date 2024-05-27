@@ -180,9 +180,7 @@ This project uses several key dependencies to function correctly. These dependen
 
 #### Maven Plugin
 
-- Maven Compiler Plugin (org.apache.maven.plugins
-
-  )
+- Maven Compiler Plugin (org.apache.maven.plugins)
 
   - The compiler plugin is used to compile the source code of the project.
 
