@@ -49,9 +49,7 @@ This section provides details about the environment required to compile and run 
 
 - **Recommended IDE**: IntelliJ IDEA
 
-- Versions
-
-  :
+- Versions:
 
   - **IntelliJ IDEA Community Edition**: Free and open-source edition.
   - **IntelliJ IDEA Ultimate Edition**: Paid edition with additional features.
